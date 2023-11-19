@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 
-import { defaultMeta, makeFormStore } from "./store";
-import { zodAdapter } from "./zod-validator";
+import { defaultMeta, makeFormStore } from "../store";
+import { zodAdapter } from "../zod-validator";
 import { z } from "zod";
 
 const dummyValidator = (data: unknown) => ({ errors: {} });
