@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import * as R from "remeda";
 import { createContext, useCallback, useContext, useRef } from "react";
 import type {
@@ -34,7 +34,7 @@ export type GetInputPropsOpts<Data> = {
 };
 export type GetInputPropsResult = {
   name: string;
-  onChange: (e: FormEvent<any>) => void;
+  onChange: (e: ChangeEvent<any>) => void;
   onBlur: () => void;
   value: string;
 };
@@ -48,6 +48,8 @@ export type UseFieldResult<Data> = {
   value: Data;
   setValue: (value: Data) => void;
   getInputProps: GetInputProps<Data>;
+  onChange: (value: Data) => void;
+  onBlur: () => void;
 };
 
 export interface Field<Data> {
@@ -140,23 +142,34 @@ function makeField<Data>(
     const validateOnBlur =
       currentBehavior === "onBlur" || currentBehavior === "onChange";
 
+    const directOnChange = useCallback(
+      (value: Data) => {
+        onChange(field.path, value as any, validateOnChange);
+      },
+      [onChange, validateOnChange]
+    );
+
+    const directOnBlur = useCallback(() => {
+      onBlur(field.path, validateOnBlur);
+    }, [onBlur, validateOnBlur]);
+
     const getInputProps = useCallback(
       (opts?: GetInputPropsOpts<Data>): GetInputPropsResult => {
         return {
           name: field.path,
-          onChange: (e: any) => {
+          onChange: (e: ChangeEvent<any>) => {
             const value = opts?.parse
               ? opts.parse(e.target.value)
               : e.target.value;
-            onChange(field.path, value, validateOnChange);
+            directOnChange(value);
           },
           onBlur: () => {
-            onBlur(field.path, validateOnBlur);
+            directOnBlur();
           },
           value: (opts?.format ? opts.format(value) : value) as string,
         };
       },
-      [onBlur, onChange, validateOnBlur, validateOnChange, value]
+      [directOnBlur, directOnChange, value]
     );
 
     return {
@@ -164,6 +177,8 @@ function makeField<Data>(
       value,
       setValue,
       getInputProps: getInputProps as GetInputProps<Data>,
+      onChange: directOnChange,
+      onBlur: directOnBlur,
     };
   }
   field.useField = useField;

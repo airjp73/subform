@@ -19,6 +19,30 @@ export function Input({
   );
 }
 
+export function ControlledInput({
+  field,
+  ...rest
+}: ComponentProps<"input"> & {
+  field: Field<string>;
+}) {
+  const { onChange, onBlur, meta, value } = field.useField();
+  return (
+    <div>
+      <input
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
+        onBlur={onBlur}
+        {...rest}
+      />
+      {meta.touched && meta.error && (
+        <p style={{ color: "red" }}>{meta.error}</p>
+      )}
+    </div>
+  );
+}
+
 export function NumberInput({
   field,
   ...rest

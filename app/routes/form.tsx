@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { Input, SubmitButton } from "~/formstand/demo-components";
+import {
+  ControlledInput,
+  Input,
+  SubmitButton,
+} from "~/formstand/demo-components";
 import { useForm } from "~/formstand/form";
 import { zodAdapter } from "~/formstand/zod-validator";
 
@@ -30,6 +34,8 @@ export default function FormPage() {
     >
       <Input field={form.field("name.first")} />
       <Input field={form.field("name.last")} />
+      <Input field={form.field("name.first")} />
+      <ControlledInput field={form.field("name.first")} />
       <SubmitButton formstand={form} />
     </form>
   );
