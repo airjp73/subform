@@ -41,8 +41,11 @@ export type GenericObj = Record<string, any>;
 export type FormStoreState<Data extends GenericObj, Output> = {
   validator: Validator<Output>;
   values: Data;
-  meta: Record<string, FieldMeta>;
+  errors: FieldErrors;
+  touched: Record<string, boolean>;
+  dirty: Record<string, boolean>;
   isSubmitting: boolean;
+  hasSubmitBeenAttempted: boolean;
 
   validate: () => Promise<ValidatorResult<Output>>;
   submit: (submitter: (data: Output) => void | Promise<void>) => Promise<void>;
@@ -68,18 +71,6 @@ export type FormstandOptions<Data extends GenericObj, Output> = {
   validator: Validator<Output>;
 };
 
-const updateError = <State extends FormStoreState<any, unknown>>(
-  path: string,
-  error: string,
-  prev: State
-): State => {
-  const newMeta = R.pipe(prev.meta[path] ?? defaultMeta, R.set("error", error));
-  return {
-    ...prev,
-    meta: R.set(prev.meta, path, newMeta),
-  };
-};
-
 export const makeFormStore = <Data extends GenericObj, Output>({
   initialValues,
   validator,
@@ -87,23 +78,28 @@ export const makeFormStore = <Data extends GenericObj, Output>({
   createStore<FormStoreState<Data, Output>>()((set, get) => ({
     validator,
     values: initialValues,
-    meta: {},
+    errors: {},
+    touched: {},
+    dirty: {},
     isSubmitting: false,
+    hasSubmitBeenAttempted: false,
 
     validate: async () => {
       const result = await get().validator(get().values);
-      if ("errors" in result) {
-        set((prev) =>
-          Object.entries(result.errors).reduce(
-            (state, [path, error]) => updateError(path, error, state),
-            prev
-          )
-        );
-      }
+      set((prev) => ({
+        ...prev,
+        errors: "errors" in result ? result.errors : {},
+      }));
       return result;
     },
     submit: async (submitter) => {
-      set((prev) => R.set(prev, "isSubmitting", true));
+      set((prev) =>
+        R.pipe(
+          prev,
+          R.set("isSubmitting", true),
+          R.set("hasSubmitBeenAttempted", true)
+        )
+      );
       const result = await get().validate();
       if ("data" in result) {
         await submitter(result.data);
@@ -132,48 +128,49 @@ export const makeFormStore = <Data extends GenericObj, Output>({
       set((prev) => ({
         ...prev,
         values: R.setPath(prev.values, path.split(".") as any, value),
-        meta: R.set(prev.meta, path as any, {
-          ...prev.getMeta(path),
-          dirty: true,
-        }),
+        dirty: R.set(prev.dirty, path as any, true),
       }));
+      if (get().getMeta(path).touched) get().validate();
     },
     onBlur: (path) => {
       set((prev) => ({
         ...prev,
-        meta: R.set(prev.meta, path as any, {
-          ...prev.getMeta(path),
-          touched: true,
-        }),
+        touched: R.set(prev.touched, path as any, true),
       }));
+      get().validate();
     },
 
     getMeta: (path) => {
-      const meta = get().meta[path] ?? defaultMeta;
-      return meta;
+      return {
+        dirty: get().dirty[path] ?? defaultMeta.dirty,
+        touched:
+          (get().touched[path] ?? defaultMeta.touched) ||
+          get().hasSubmitBeenAttempted,
+        error: get().errors[path] ?? defaultMeta.error,
+      };
     },
     setTouched: (path, value) => {
       set((prev) => {
-        const newMeta = R.pipe(
-          prev.meta[path] ?? defaultMeta,
-          R.set("touched", value)
-        );
         return {
           ...prev,
-          meta: R.set(prev.meta, path, newMeta),
+          touched: R.set(prev.touched, path, value),
         };
       });
     },
     setDirty: (path, value) => {
       set((prev) => {
-        const newMeta = R.set(prev.getMeta(path), "dirty", value);
         return {
           ...prev,
-          meta: R.set(prev.meta, path, newMeta),
+          dirty: R.set(prev.dirty, path, value),
         };
       });
     },
     setError: (path, error) => {
-      set((prev) => updateError(path, error, prev));
+      set((prev) => {
+        return {
+          ...prev,
+          errors: R.set(prev.errors, path, error),
+        };
+      });
     },
   }));

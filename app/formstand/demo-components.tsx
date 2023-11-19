@@ -9,7 +9,9 @@ export const Input = ({
   return (
     <div>
       <input {...getInputProps()} {...rest} />
-      <p style={{ color: "red" }}>{meta.error}</p>
+      {meta.touched && meta.error && (
+        <p style={{ color: "red" }}>{meta.error}</p>
+      )}
     </div>
   );
 };

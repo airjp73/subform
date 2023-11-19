@@ -1,4 +1,4 @@
-import { expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { z } from "zod";
 import { useForm } from "./form";
@@ -55,13 +55,61 @@ it("should submit a basic form", async () => {
   await userEvent.click(screen.getByText("Submit"));
   expect(screen.getByText("first name too short")).toBeInTheDocument();
   expect(screen.getByText("last name too short")).toBeInTheDocument();
-  await userEvent.type(screen.getByText("First name"), "John");
-  await userEvent.type(screen.getByText("Last name"), "John");
+  await userEvent.type(screen.getByLabelText(/first name/i), "John");
+  await userEvent.type(screen.getByLabelText(/last name/i), "John");
   await userEvent.click(screen.getByText("Submit"));
   expect(cb).toHaveBeenCalledWith({
     name: {
       first: "John",
       last: "John",
+    },
+  });
+});
+
+it("shoud validate on blur and change", async () => {
+  const cb = vi.fn();
+  render(<FormPage onSubmit={cb} />);
+
+  expect(screen.queryByText("first name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("first name too long")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too long")).not.toBeInTheDocument();
+
+  await userEvent.type(screen.getByLabelText(/first name/i), "J");
+  await userEvent.type(screen.getByLabelText(/last name/i), "S");
+  await userEvent.tab();
+
+  expect(screen.getByText("first name too short")).toBeInTheDocument();
+  expect(screen.getByText("last name too short")).toBeInTheDocument();
+  expect(screen.queryByText("first name too long")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too long")).not.toBeInTheDocument();
+
+  await userEvent.type(screen.getByLabelText(/first name/i), "ohn");
+  await userEvent.type(screen.getByLabelText(/last name/i), "mith");
+
+  expect(screen.queryByText("first name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("first name too long")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too long")).not.toBeInTheDocument();
+
+  await userEvent.type(screen.getByLabelText(/first name/i), "asdfasdfasdf");
+  await userEvent.type(screen.getByLabelText(/last name/i), "asdfasdfasdf");
+
+  expect(screen.queryByText("first name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too short")).not.toBeInTheDocument();
+  expect(screen.getByText("first name too long")).toBeInTheDocument();
+  expect(screen.getByText("last name too long")).toBeInTheDocument();
+
+  await userEvent.clear(screen.getByLabelText(/first name/i));
+  await userEvent.clear(screen.getByLabelText(/last name/i));
+  await userEvent.type(screen.getByLabelText(/first name/i), "John");
+  await userEvent.type(screen.getByLabelText(/last name/i), "Smith");
+  await userEvent.click(screen.getByText("Submit"));
+
+  expect(cb).toHaveBeenCalledWith({
+    name: {
+      first: "John",
+      last: "Smith",
     },
   });
 });
