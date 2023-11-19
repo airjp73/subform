@@ -1,27 +1,7 @@
-import type { ComponentProps } from "react";
 import { z } from "zod";
-import { useField, useForm, useIsSubmitting } from "~/formstand/form";
+import { Input, SubmitButton } from "~/formstand/demo-components";
+import { useForm } from "~/formstand/form";
 import { zodAdapter } from "~/formstand/zod-validator";
-
-const Input = ({
-  name,
-  ...rest
-}: ComponentProps<"input"> & { name: string }) => {
-  const field = useField({ name });
-  return (
-    <div>
-      <input {...field.getInputProps()} {...rest} />
-      <p style={{ color: "red" }}>{field.meta.error}</p>
-    </div>
-  );
-};
-
-const SubmitButton = (props: ComponentProps<"button">) => {
-  const isSubmitting = useIsSubmitting();
-  return (
-    <button {...props}>{isSubmitting ? "Submitting..." : "Submit"}</button>
-  );
-};
 
 export default function FormPage() {
   const form = useForm({
