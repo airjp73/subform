@@ -1,12 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
+import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { z } from "zod";
 import { useForm } from "./form";
 import { zodAdapter } from "./zod-validator";
 import userEvent from "@testing-library/user-event";
 import { Input, SubmitButton } from "./demo-components";
+import type { ValidationBehaviorConfig } from "./store";
 
-function FormPage({ onSubmit }: { onSubmit: (data: any) => void }) {
+function FormPage({
+  onSubmit,
+  validationBehavior,
+}: {
+  onSubmit: (data: any) => void;
+  validationBehavior?: ValidationBehaviorConfig;
+}) {
   const form = useForm({
     validator: zodAdapter(
       z.object({
@@ -28,6 +35,7 @@ function FormPage({ onSubmit }: { onSubmit: (data: any) => void }) {
         last: "",
       },
     },
+    validationBehavior,
   });
 
   return (
@@ -112,4 +120,33 @@ it("shoud validate on blur and change", async () => {
       last: "Smith",
     },
   });
+});
+
+it("should customize validation behavior", async () => {
+  render(
+    <FormPage
+      onSubmit={vi.fn()}
+      validationBehavior={{
+        initial: "onSubmit",
+        whenTouched: "onSubmit",
+        whenSubmitted: "onSubmit",
+      }}
+    />
+  );
+
+  await userEvent.type(screen.getByLabelText(/first name/i), "J");
+  await userEvent.type(screen.getByLabelText(/last name/i), "S");
+  await userEvent.tab();
+
+  expect(screen.queryByText("first name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too short")).not.toBeInTheDocument();
+  expect(screen.queryByText("first name too long")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too long")).not.toBeInTheDocument();
+
+  await userEvent.click(screen.getByText("Submit"));
+
+  expect(screen.getByText("first name too short")).toBeInTheDocument();
+  expect(screen.getByText("last name too short")).toBeInTheDocument();
+  expect(screen.queryByText("first name too long")).not.toBeInTheDocument();
+  expect(screen.queryByText("last name too long")).not.toBeInTheDocument();
 });

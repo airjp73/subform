@@ -36,6 +36,20 @@ export const defaultMeta = {
   error: undefined,
 };
 
+export type ValidationBehavior = "onChange" | "onBlur" | "onSubmit";
+
+export type ValidationBehaviorConfig = {
+  initial: ValidationBehavior;
+  whenTouched: ValidationBehavior;
+  whenSubmitted: ValidationBehavior;
+};
+
+export const defaultValidationBehavior: ValidationBehaviorConfig = {
+  initial: "onBlur",
+  whenTouched: "onChange",
+  whenSubmitted: "onChange",
+};
+
 export type GenericObj = Record<string, any>;
 
 export type FormStoreState<Data extends GenericObj, Output> = {
@@ -46,14 +60,19 @@ export type FormStoreState<Data extends GenericObj, Output> = {
   dirty: Record<string, boolean>;
   isSubmitting: boolean;
   hasSubmitBeenAttempted: boolean;
+  validationBehavior: ValidationBehaviorConfig;
 
   validate: () => Promise<ValidatorResult<Output>>;
   submit: (submitter: (data: Output) => void | Promise<void>) => Promise<void>;
   onChange: <Path extends Paths<Data>>(
     path: Path,
-    value: DataAtPath<Data, Path>
+    value: DataAtPath<Data, Path>,
+    shouldValidate?: boolean
   ) => void;
-  onBlur: <Path extends Paths<Data>>(path: Path) => void;
+  onBlur: <Path extends Paths<Data>>(
+    path: Path,
+    shouldValidate?: boolean
+  ) => void;
 
   getValue: <Path extends Paths<Data>>(path: Path) => DataAtPath<Data, Path>;
   setValue: <Path extends Paths<Data>>(
@@ -69,11 +88,13 @@ export type FormStoreState<Data extends GenericObj, Output> = {
 export type FormstandOptions<Data extends GenericObj, Output> = {
   initialValues: Data;
   validator: Validator<Output>;
+  validationBehavior?: ValidationBehaviorConfig;
 };
 
 export const makeFormStore = <Data extends GenericObj, Output>({
   initialValues,
   validator,
+  validationBehavior = defaultValidationBehavior,
 }: FormstandOptions<Data, Output>) =>
   createStore<FormStoreState<Data, Output>>()((set, get) => ({
     validator,
@@ -83,6 +104,7 @@ export const makeFormStore = <Data extends GenericObj, Output>({
     dirty: {},
     isSubmitting: false,
     hasSubmitBeenAttempted: false,
+    validationBehavior,
 
     validate: async () => {
       const result = await get().validator(get().values);
@@ -124,20 +146,20 @@ export const makeFormStore = <Data extends GenericObj, Output>({
         values: R.setPath(prev.values, path.split(".") as any, value),
       }));
     },
-    onChange: (path, value) => {
+    onChange: (path, value, shouldValidate) => {
       set((prev) => ({
         ...prev,
         values: R.setPath(prev.values, path.split(".") as any, value),
         dirty: R.set(prev.dirty, path as any, true),
       }));
-      if (get().getMeta(path).touched) get().validate();
+      if (shouldValidate) get().validate();
     },
-    onBlur: (path) => {
+    onBlur: (path, shouldValidate) => {
       set((prev) => ({
         ...prev,
         touched: R.set(prev.touched, path as any, true),
       }));
-      get().validate();
+      if (shouldValidate) get().validate();
     },
 
     getMeta: (path) => {

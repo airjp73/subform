@@ -8,6 +8,7 @@ import type {
   FormstandOptions,
   GenericObj,
   Paths,
+  ValidationBehaviorConfig,
 } from "./store";
 import { makeFormStore } from "./store";
 import { useStore, type StoreApi } from "zustand";
@@ -23,12 +24,28 @@ export const useFormContext = () => {
   return context;
 };
 
+export type UseFieldOptions = {
+  validationBehavior?: ValidationBehaviorConfig;
+};
+
+export type UseFieldResult<Data> = {
+  meta: FieldMeta;
+  value: Data;
+  setValue: (value: Data) => void;
+  getInputProps: () => {
+    name: string;
+    onChange: (e: any) => void;
+    onBlur: () => void;
+    value: Data;
+  };
+};
+
 export interface Field<Data> {
   <N extends Paths<Data>>(name: N): Field<DataAtPath<Data, N>>;
   path: Paths<Data>;
   store: StoreApi<FormStoreState<any, unknown>>;
 
-  useField: () => UseFieldResult<Data>;
+  useField: (opts?: UseFieldOptions) => UseFieldResult<Data>;
 
   getValue: () => Data;
   setValue: (value: Data) => void;
@@ -87,25 +104,44 @@ function makeField<Data>(
     useStore(store, (state) => state.getMeta(prefix).dirty);
   field.useDirty = useDirty;
 
-  function useField(): UseFieldResult<Data> {
+  function useField(opts: UseFieldOptions = {}): UseFieldResult<Data> {
     const meta = field.useMeta();
     const value = field.useValue();
     const setValue = field.setValue;
     const onChange = useStore(field.store, (state) => state.onChange);
     const onBlur = useStore(field.store, (state) => state.onBlur);
+    const hasSubmitBeenAttempted = useStore(
+      field.store,
+      (state) => state.hasSubmitBeenAttempted
+    );
+
+    const formLevelValidationBehavior = useStore(
+      field.store,
+      (state) => state.validationBehavior
+    );
+    const validationBehavior =
+      opts.validationBehavior ?? formLevelValidationBehavior;
+    const currentBehavior = hasSubmitBeenAttempted
+      ? validationBehavior.whenSubmitted
+      : meta.touched
+      ? validationBehavior.whenTouched
+      : validationBehavior.initial;
+    const validateOnChange = currentBehavior === "onChange";
+    const validateOnBlur =
+      currentBehavior === "onBlur" || currentBehavior === "onChange";
 
     const getInputProps = useCallback(() => {
       return {
         name: field.path,
         onChange: (e: any) => {
-          onChange(field.path, e.target.value);
+          onChange(field.path, e.target.value, validateOnChange);
         },
         onBlur: () => {
-          onBlur(field.path);
+          onBlur(field.path, validateOnBlur);
         },
         value,
       };
-    }, [onBlur, onChange, value]);
+    }, [onBlur, onChange, validateOnBlur, validateOnChange, value]);
 
     return {
       meta,
@@ -164,20 +200,4 @@ export const useForm = <Data extends GenericObj, Output>(
   const storeRef = useRef<Formstand<Data, Output> | null>(null);
   if (!storeRef.current) storeRef.current = createForm(opts);
   return storeRef.current;
-};
-
-export type UseFieldOptions<N extends Field<any>> = {
-  field: N;
-};
-
-export type UseFieldResult<Data> = {
-  meta: FieldMeta;
-  value: Data;
-  setValue: (value: Data) => void;
-  getInputProps: () => {
-    name: string;
-    onChange: (e: any) => void;
-    onBlur: () => void;
-    value: Data;
-  };
 };
