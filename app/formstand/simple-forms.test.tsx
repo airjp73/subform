@@ -7,7 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { Input, SubmitButton } from "./demo-components";
 import type { ValidationBehaviorConfig } from "./store";
 
-function FormPage({
+function SimpleForm({
   onSubmit,
   validationBehavior,
 }: {
@@ -59,7 +59,7 @@ function FormPage({
 
 it("should submit a basic form", async () => {
   const cb = vi.fn();
-  render(<FormPage onSubmit={cb} />);
+  render(<SimpleForm onSubmit={cb} />);
   await userEvent.click(screen.getByText("Submit"));
   expect(screen.getByText("first name too short")).toBeInTheDocument();
   expect(screen.getByText("last name too short")).toBeInTheDocument();
@@ -76,7 +76,7 @@ it("should submit a basic form", async () => {
 
 it("shoud validate on blur and change", async () => {
   const cb = vi.fn();
-  render(<FormPage onSubmit={cb} />);
+  render(<SimpleForm onSubmit={cb} />);
 
   expect(screen.queryByText("first name too short")).not.toBeInTheDocument();
   expect(screen.queryByText("last name too short")).not.toBeInTheDocument();
@@ -124,7 +124,7 @@ it("shoud validate on blur and change", async () => {
 
 it("should customize validation behavior", async () => {
   render(
-    <FormPage
+    <SimpleForm
       onSubmit={vi.fn()}
       validationBehavior={{
         initial: "onSubmit",
