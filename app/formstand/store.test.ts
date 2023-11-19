@@ -6,8 +6,10 @@ it("should set values", () => {
     name: "test",
     age: 10,
   });
+  expect(store.getState().getValue("name")).toBe("test");
   store.getState().setValue("name", "bob");
   expect(store.getState().values.name).toBe("bob");
+  expect(store.getState().getValue("name")).toBe("bob");
 });
 
 it("should set nested values", () => {

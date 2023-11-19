@@ -1,7 +1,8 @@
-import { createStore } from "zustand";
+import { createStore } from "zustand/vanilla";
 import * as R from "remeda";
+import invariant from "tiny-invariant";
 
-type Paths<T> = T extends object
+export type Paths<T> = T extends object
   ? {
       [K in keyof T]: `${Exclude<K, symbol>}${"" | `.${Paths<T[K]>}`}`;
     }[keyof T]
@@ -15,7 +16,7 @@ type Paths<T> = T extends object
 //     }[keyof T]
 //   : never;
 
-type DataAtPath<
+export type DataAtPath<
   Data,
   Path extends string
 > = Path extends `${infer Key}.${infer Rest}`
@@ -37,16 +38,18 @@ export const defaultMeta = {
   error: undefined,
 };
 
-type GenericObj = Record<string, any>;
+export type GenericObj = Record<string, any>;
 
 export type FormStoreState<Data extends GenericObj> = {
   values: Data;
-  meta: Record<string, FieldMeta>;
-  getMeta: (path: Paths<Data>) => FieldMeta;
+  getValue: <Path extends Paths<Data>>(path: Path) => DataAtPath<Data, Path>;
   setValue: <Path extends Paths<Data>>(
     path: Path,
     value: DataAtPath<Data, Path>
   ) => void;
+
+  meta: Record<string, FieldMeta>;
+  getMeta: (path: Paths<Data>) => FieldMeta;
   setTouched: (path: Paths<Data>, value: boolean) => void;
   setDirty: (path: Paths<Data>, value: boolean) => void;
   setError: (path: Paths<Data>, error: string) => void;
@@ -56,17 +59,28 @@ export const makeFormStore = <Data extends GenericObj>(initialValues: Data) =>
   createStore<FormStoreState<Data>>()((set, get) => ({
     values: initialValues,
     meta: {},
-
-    getMeta: (path) => {
-      const meta = get().meta[path] ?? defaultMeta;
-      return meta;
+    getValue: (path) => {
+      const value = R.pathOr(
+        get().values,
+        path.split(".") as any,
+        undefined as any
+      );
+      invariant(
+        value !== undefined,
+        `Value at path ${path} is undefined. Please set a default value.`
+      );
+      return value;
     },
-
     setValue: (path, value) => {
       set((prev) => ({
         ...prev,
         values: R.setPath(prev.values, path.split(".") as any, value),
       }));
+    },
+
+    getMeta: (path) => {
+      const meta = get().meta[path] ?? defaultMeta;
+      return meta;
     },
     setTouched: (path, value) => {
       set((prev) => {
