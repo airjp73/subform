@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useRef } from "react";
-import type { FormStoreState, GenericObj } from "./store";
+import type { FormStoreState, FormstandOptions, GenericObj } from "./store";
 import { makeFormStore } from "./store";
 import { useStore, type StoreApi } from "zustand";
 
 export type FormContextType = {
-  store: StoreApi<FormStoreState<GenericObj>>;
+  store: StoreApi<FormStoreState<GenericObj, unknown>>;
 };
 
 export const FormContext = createContext<FormContextType | null>(null);
@@ -14,8 +14,10 @@ export const useFormContext = () => {
   return context;
 };
 
-const createForm = <Data extends GenericObj>(opts: UseFormOptions<Data>) => {
-  const store = makeFormStore(opts.initialValues);
+const createForm = <Data extends GenericObj, Output>(
+  opts: FormstandOptions<Data, Output>
+) => {
+  const store = makeFormStore(opts);
 
   const contextValue: FormContextType = {
     store: store as any,
@@ -35,18 +37,20 @@ const createForm = <Data extends GenericObj>(opts: UseFormOptions<Data>) => {
   };
 };
 
-type UseFormOptions<Data extends GenericObj> = {
-  initialValues: Data;
-};
-export const useForm = <Data extends GenericObj>(
-  opts: UseFormOptions<Data>
+export const useForm = <Data extends GenericObj, Output>(
+  opts: FormstandOptions<Data, Output>
 ) => {
-  const storeRef = useRef<ReturnType<typeof createForm<Data>> | null>(null);
+  const storeRef = useRef<ReturnType<typeof createForm<Data, Output>> | null>(
+    null
+  );
   if (!storeRef.current) storeRef.current = createForm(opts);
   return storeRef.current;
 };
 
-export const useField = (name: string) => {
+export type UseFieldOptions = {
+  name: string;
+};
+export const useField = ({ name }: UseFieldOptions) => {
   const { store } = useFormContext();
   const meta = useStore(store, (state) => state.getMeta(name));
   const value = useStore(store, (state) => state.getValue(name));

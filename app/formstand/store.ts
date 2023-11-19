@@ -16,6 +16,12 @@ export type Paths<T> = T extends object
 //     }[keyof T]
 //   : never;
 
+export type FieldErrors = Record<string, string>;
+export type ValidatorResult<T> = { errors: FieldErrors } | { data: T };
+export type Validator<T> = (
+  value: unknown
+) => ValidatorResult<T> | Promise<ValidatorResult<T>>;
+
 export type DataAtPath<
   Data,
   Path extends string
@@ -40,7 +46,8 @@ export const defaultMeta = {
 
 export type GenericObj = Record<string, any>;
 
-export type FormStoreState<Data extends GenericObj> = {
+export type FormStoreState<Data extends GenericObj, Output> = {
+  validator: Validator<Output>;
   values: Data;
   getValue: <Path extends Paths<Data>>(path: Path) => DataAtPath<Data, Path>;
   setValue: <Path extends Paths<Data>>(
@@ -51,6 +58,7 @@ export type FormStoreState<Data extends GenericObj> = {
     path: Path,
     value: DataAtPath<Data, Path>
   ) => void;
+  onBlur: <Path extends Paths<Data>>(path: Path) => void;
 
   meta: Record<string, FieldMeta>;
   getMeta: (path: Paths<Data>) => FieldMeta;
@@ -59,8 +67,17 @@ export type FormStoreState<Data extends GenericObj> = {
   setError: (path: Paths<Data>, error: string) => void;
 };
 
-export const makeFormStore = <Data extends GenericObj>(initialValues: Data) =>
-  createStore<FormStoreState<Data>>()((set, get) => ({
+export type FormstandOptions<Data extends GenericObj, Output> = {
+  initialValues: Data;
+  validator: Validator<Output>;
+};
+
+export const makeFormStore = <Data extends GenericObj, Output>({
+  initialValues,
+  validator,
+}: FormstandOptions<Data, Output>) =>
+  createStore<FormStoreState<Data, Output>>()((set, get) => ({
+    validator,
     values: initialValues,
     meta: {},
     getValue: (path) => {
@@ -88,6 +105,14 @@ export const makeFormStore = <Data extends GenericObj>(initialValues: Data) =>
         meta: R.set(prev.meta, path as any, {
           ...prev.getMeta(path),
           dirty: true,
+        }),
+      }));
+    },
+    onBlur: (path) => {
+      set((prev) => ({
+        ...prev,
+        meta: R.set(prev.meta, path as any, {
+          ...prev.getMeta(path),
           touched: true,
         }),
       }));

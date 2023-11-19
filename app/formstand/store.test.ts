@@ -1,10 +1,16 @@
 import { expect, it } from "vitest";
+
 import { defaultMeta, makeFormStore } from "./store";
+
+const dummyValidator = (data: unknown) => ({ errors: {} });
 
 it("should set values", () => {
   const store = makeFormStore({
-    name: "test",
-    age: 10,
+    initialValues: {
+      name: "test",
+      age: 10,
+    },
+    validator: dummyValidator,
   });
   expect(store.getState().getValue("name")).toBe("test");
   store.getState().setValue("name", "bob");
@@ -14,18 +20,21 @@ it("should set values", () => {
 
 it("should set nested values", () => {
   const store = makeFormStore({
-    bob: {
-      ross: {
-        name: "test",
-        age: 10,
+    initialValues: {
+      bob: {
+        ross: {
+          name: "test",
+          age: 10,
+        },
+      },
+      jim: {
+        ross: {
+          name: "test",
+          age: 10,
+        },
       },
     },
-    jim: {
-      ross: {
-        name: "test",
-        age: 10,
-      },
-    },
+    validator: dummyValidator,
   });
   store.getState().setValue("bob.ross.name", "bob");
   expect(store.getState().values.bob.ross.name).toBe("bob");
@@ -33,10 +42,13 @@ it("should set nested values", () => {
 
 it("should update meta", () => {
   const store = makeFormStore({
-    bob: {
-      ross: {
-        name: "test",
-        age: 10,
+    validator: dummyValidator,
+    initialValues: {
+      bob: {
+        ross: {
+          name: "test",
+          age: 10,
+        },
       },
     },
   });
@@ -57,16 +69,25 @@ it("should update meta", () => {
   });
 });
 
-it("should handle change events", () => {
+it("should handle change and blur events", () => {
   const store = makeFormStore({
-    name: "test",
-    age: 10,
+    validator: dummyValidator,
+    initialValues: {
+      name: "test",
+      age: 10,
+    },
   });
   store.getState().onChange("name", "bob");
   expect(store.getState().values.name).toBe("bob");
   expect(store.getState().getMeta("name")).toEqual({
     ...defaultMeta,
-    touched: true,
     dirty: true,
+  });
+
+  store.getState().onBlur("name");
+  expect(store.getState().getMeta("name")).toEqual({
+    ...defaultMeta,
+    dirty: true,
+    touched: true,
   });
 });
