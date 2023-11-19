@@ -26,7 +26,7 @@ function Form({ onSubmit }: { onSubmit: (data: any) => void }) {
     >
       <label>
         Text
-        <ControlledInput field={form.field("text")} />
+        <ControlledInput formstand={form("text")} />
       </label>
       <SubmitButton formstand={form} />
     </form>

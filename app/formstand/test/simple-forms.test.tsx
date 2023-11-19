@@ -46,11 +46,11 @@ function SimpleForm({
     >
       <label>
         First name
-        <Input field={form.field("name.first")} />
+        <Input formstand={form("name.first")} />
       </label>
       <label>
         Last name
-        <Input field={form.field("name.last")} />
+        <Input formstand={form("name.last")} />
       </label>
       <SubmitButton formstand={form} />
     </form>

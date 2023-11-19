@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import { z } from "zod";
-import type { Field } from "../form";
+import type { Formstand } from "../form";
 import { useForm } from "../form";
 import { zodAdapter } from "../zod-validator";
 import userEvent from "@testing-library/user-event";
@@ -43,8 +43,8 @@ function WithSubforms({
         onSubmit(data);
       })}
     >
-      <NameForm label="Contact A" field={form.field("contactA")} />
-      <NameForm label="Contact B" field={form.field("contactB")} />
+      <NameForm label="Contact A" field={form("contactA")} />
+      <NameForm label="Contact B" field={form("contactB")} />
       <SubmitButton formstand={form} />
     </form>
   );
@@ -54,7 +54,7 @@ function NameForm({
   field,
   label,
 }: {
-  field: Field<{ first: string; last: string }>;
+  field: Formstand<{ first: string; last: string }>;
   label: string;
 }) {
   return (
@@ -62,11 +62,11 @@ function NameForm({
       <legend>{label}</legend>
       <label>
         First name
-        <Input field={field("first")} />
+        <Input formstand={field("first")} />
       </label>
       <label>
         Last name
-        <Input field={field("last")} />
+        <Input formstand={field("last")} />
       </label>
     </fieldset>
   );

@@ -32,10 +32,10 @@ export default function FormPage() {
         alert(JSON.stringify(data));
       })}
     >
-      <Input field={form.field("name.first")} />
-      <Input field={form.field("name.last")} />
-      <Input field={form.field("name.first")} />
-      <ControlledInput field={form.field("name.first")} />
+      <Input formstand={form("name.first")} />
+      <Input formstand={form("name.last")} />
+      <Input formstand={form("name.first")} />
+      <ControlledInput formstand={form("name.first")} />
       <SubmitButton formstand={form} />
     </form>
   );

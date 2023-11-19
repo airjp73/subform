@@ -28,7 +28,7 @@ function SimpleForm({
     >
       <label>
         Age
-        <NumberInput type="number" field={form.field("age")} />
+        <NumberInput type="number" formstand={form("age")} />
       </label>
       <SubmitButton formstand={form} />
     </form>
