@@ -40,22 +40,23 @@ export type GenericObj = Record<string, any>;
 
 export type FormStoreState<Data extends GenericObj, Output> = {
   validator: Validator<Output>;
-  validate: () => Promise<ValidatorResult<Output>>;
-
   values: Data;
-  getValue: <Path extends Paths<Data>>(path: Path) => DataAtPath<Data, Path>;
-  setValue: <Path extends Paths<Data>>(
-    path: Path,
-    value: DataAtPath<Data, Path>
-  ) => void;
+  meta: Record<string, FieldMeta>;
+  isSubmitting: boolean;
 
+  validate: () => Promise<ValidatorResult<Output>>;
+  submit: (submitter: (data: Output) => void | Promise<void>) => Promise<void>;
   onChange: <Path extends Paths<Data>>(
     path: Path,
     value: DataAtPath<Data, Path>
   ) => void;
   onBlur: <Path extends Paths<Data>>(path: Path) => void;
 
-  meta: Record<string, FieldMeta>;
+  getValue: <Path extends Paths<Data>>(path: Path) => DataAtPath<Data, Path>;
+  setValue: <Path extends Paths<Data>>(
+    path: Path,
+    value: DataAtPath<Data, Path>
+  ) => void;
   getMeta: (path: Paths<Data>) => FieldMeta;
   setTouched: (path: Paths<Data>, value: boolean) => void;
   setDirty: (path: Paths<Data>, value: boolean) => void;
@@ -84,7 +85,11 @@ export const makeFormStore = <Data extends GenericObj, Output>({
   validator,
 }: FormstandOptions<Data, Output>) =>
   createStore<FormStoreState<Data, Output>>()((set, get) => ({
+    isSubmitting: false,
     validator,
+    values: initialValues,
+    meta: {},
+
     validate: async () => {
       const result = await get().validator(get().values);
       if ("errors" in result) {
@@ -97,9 +102,14 @@ export const makeFormStore = <Data extends GenericObj, Output>({
       }
       return result;
     },
-
-    values: initialValues,
-    meta: {},
+    submit: async (submitter) => {
+      set((prev) => R.set(prev, "isSubmitting", true));
+      const result = await get().validate();
+      if ("data" in result) {
+        await submitter(result.data);
+      }
+      set((prev) => R.set(prev, "isSubmitting", false));
+    },
     getValue: (path) => {
       const value = R.pathOr(
         get().values,

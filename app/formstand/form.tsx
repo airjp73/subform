@@ -1,3 +1,4 @@
+import type { FormEvent } from "react";
 import { createContext, useCallback, useContext, useRef } from "react";
 import type { FormStoreState, FormstandOptions, GenericObj } from "./store";
 import { makeFormStore } from "./store";
@@ -32,6 +33,12 @@ const createForm = <Data extends GenericObj, Output>(
   };
 
   return {
+    handleSubmit:
+      (cb: (values: Output) => void | Promise<void>) =>
+      (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        store.getState().submit(cb);
+      },
     getValues: () => store.getState().values,
     Provider: FormstandProvider,
   };
@@ -70,6 +77,7 @@ export const useField = ({ name }: UseFieldOptions) => {
       onChange: (e: any) => {
         onChange(name, e.target.value);
       },
+      onBlur: () => {},
       value,
     };
   }, [name, onChange, value]);
@@ -80,4 +88,9 @@ export const useField = ({ name }: UseFieldOptions) => {
     setValue: setFieldValue,
     getInputProps,
   };
+};
+
+export const useIsSubmitting = () => {
+  const { store } = useFormContext();
+  return useStore(store, (state) => state.isSubmitting);
 };

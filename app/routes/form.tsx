@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { z } from "zod";
-import { useField, useForm } from "~/formstand/form";
+import { useField, useForm, useIsSubmitting } from "~/formstand/form";
 import { zodAdapter } from "~/formstand/zod-validator";
 
 const Input = ({
@@ -13,6 +13,13 @@ const Input = ({
       <input {...field.getInputProps()} {...rest} />
       <p style={{ color: "red" }}>{field.meta.error}</p>
     </div>
+  );
+};
+
+const SubmitButton = (props: ComponentProps<"button">) => {
+  const isSubmitting = useIsSubmitting();
+  return (
+    <button {...props}>{isSubmitting ? "Submitting..." : "Submit"}</button>
   );
 };
 
@@ -37,14 +44,14 @@ export default function FormPage() {
   return (
     <form.Provider>
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          alert(JSON.stringify(form.getValues()));
-        }}
+        onSubmit={form.handleSubmit(async (data) => {
+          await new Promise((r) => setTimeout(r, 1000));
+          alert(JSON.stringify(data));
+        })}
       >
         <Input name="name.first" />
         <Input name="name.last" />
-        <button type="submit">Submit</button>
+        <SubmitButton />
       </form>
     </form.Provider>
   );
