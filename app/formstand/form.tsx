@@ -28,16 +28,26 @@ export type UseFieldOptions = {
   validationBehavior?: ValidationBehaviorConfig;
 };
 
+export type GetInputPropsOpts<Data> = {
+  format?: (value: Data) => string;
+  parse?: (value: string) => Data;
+};
+export type GetInputPropsResult = {
+  name: string;
+  onChange: (e: FormEvent<any>) => void;
+  onBlur: () => void;
+  value: string;
+};
+
+export type GetInputProps<Data> = Data extends string
+  ? (opts?: GetInputPropsOpts<Data>) => GetInputPropsResult
+  : (opts: Required<GetInputPropsOpts<Data>>) => GetInputPropsResult;
+
 export type UseFieldResult<Data> = {
   meta: FieldMeta;
   value: Data;
   setValue: (value: Data) => void;
-  getInputProps: () => {
-    name: string;
-    onChange: (e: any) => void;
-    onBlur: () => void;
-    value: Data;
-  };
+  getInputProps: GetInputProps<Data>;
 };
 
 export interface Field<Data> {
@@ -130,24 +140,30 @@ function makeField<Data>(
     const validateOnBlur =
       currentBehavior === "onBlur" || currentBehavior === "onChange";
 
-    const getInputProps = useCallback(() => {
-      return {
-        name: field.path,
-        onChange: (e: any) => {
-          onChange(field.path, e.target.value, validateOnChange);
-        },
-        onBlur: () => {
-          onBlur(field.path, validateOnBlur);
-        },
-        value,
-      };
-    }, [onBlur, onChange, validateOnBlur, validateOnChange, value]);
+    const getInputProps = useCallback(
+      (opts?: GetInputPropsOpts<Data>): GetInputPropsResult => {
+        return {
+          name: field.path,
+          onChange: (e: any) => {
+            const value = opts?.parse
+              ? opts.parse(e.target.value)
+              : e.target.value;
+            onChange(field.path, value, validateOnChange);
+          },
+          onBlur: () => {
+            onBlur(field.path, validateOnBlur);
+          },
+          value: (opts?.format ? opts.format(value) : value) as string,
+        };
+      },
+      [onBlur, onChange, validateOnBlur, validateOnChange, value]
+    );
 
     return {
       meta,
       value,
       setValue,
-      getInputProps,
+      getInputProps: getInputProps as GetInputProps<Data>,
     };
   }
   field.useField = useField;

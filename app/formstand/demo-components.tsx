@@ -1,20 +1,46 @@
 import type { ComponentProps } from "react";
 import type { Field, Formstand } from "./form";
 
-export const Input = ({
+export function Input({
   field,
+  type,
   ...rest
-}: ComponentProps<"input"> & { field: Field<string> }) => {
+}: ComponentProps<"input"> & {
+  field: Field<string>;
+}) {
   const { getInputProps, meta } = field.useField();
   return (
     <div>
-      <input {...getInputProps()} {...rest} />
+      <input type={type} {...getInputProps()} {...rest} />
       {meta.touched && meta.error && (
         <p style={{ color: "red" }}>{meta.error}</p>
       )}
     </div>
   );
-};
+}
+
+export function NumberInput({
+  field,
+  ...rest
+}: ComponentProps<"input"> & {
+  field: Field<number>;
+}) {
+  const { getInputProps, meta } = field.useField();
+  return (
+    <div>
+      <input
+        {...getInputProps({
+          format: (value) => value.toString(),
+          parse: (value) => Number(value),
+        })}
+        {...rest}
+      />
+      {meta.touched && meta.error && (
+        <p style={{ color: "red" }}>{meta.error}</p>
+      )}
+    </div>
+  );
+}
 
 export const SubmitButton = ({
   formstand,
