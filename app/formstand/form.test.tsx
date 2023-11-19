@@ -31,23 +31,21 @@ function FormPage({ onSubmit }: { onSubmit: (data: any) => void }) {
   });
 
   return (
-    <form.Provider>
-      <form
-        onSubmit={form.handleSubmit((data) => {
-          onSubmit(data);
-        })}
-      >
-        <label>
-          First name
-          <Input name="name.first" />
-        </label>
-        <label>
-          Last name
-          <Input name="name.last" />
-        </label>
-        <SubmitButton />
-      </form>
-    </form.Provider>
+    <form
+      onSubmit={form.handleSubmit((data) => {
+        onSubmit(data);
+      })}
+    >
+      <label>
+        First name
+        <Input field={form.field("name.first")} />
+      </label>
+      <label>
+        Last name
+        <Input field={form.field("name.last")} />
+      </label>
+      <SubmitButton formstand={form} />
+    </form>
   );
 }
 

@@ -22,17 +22,15 @@ export default function FormPage() {
   });
 
   return (
-    <form.Provider>
-      <form
-        onSubmit={form.handleSubmit(async (data) => {
-          await new Promise((r) => setTimeout(r, 1000));
-          alert(JSON.stringify(data));
-        })}
-      >
-        <Input name="name.first" />
-        <Input name="name.last" />
-        <SubmitButton />
-      </form>
-    </form.Provider>
+    <form
+      onSubmit={form.handleSubmit(async (data) => {
+        await new Promise((r) => setTimeout(r, 1000));
+        alert(JSON.stringify(data));
+      })}
+    >
+      <Input field={form.field("name.first")} />
+      <Input field={form.field("name.last")} />
+      <SubmitButton formstand={form} />
+    </form>
   );
 }

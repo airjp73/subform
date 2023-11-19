@@ -1,22 +1,23 @@
 import type { ComponentProps } from "react";
-import { useField, useIsSubmitting } from "./form";
+import type { Field, Formstand } from "./form";
 
 export const Input = ({
-  name,
+  field,
   ...rest
-}: ComponentProps<"input"> & { name: string }) => {
-  const field = useField({ name });
+}: ComponentProps<"input"> & { field: Field<string> }) => {
+  const { getInputProps, meta } = field.useField();
   return (
     <div>
-      <input {...field.getInputProps()} {...rest} />
-      <p style={{ color: "red" }}>{field.meta.error}</p>
+      <input {...getInputProps()} {...rest} />
+      <p style={{ color: "red" }}>{meta.error}</p>
     </div>
   );
 };
 
-export const SubmitButton = (props: ComponentProps<"button">) => {
-  const isSubmitting = useIsSubmitting();
-  return (
-    <button {...props}>{isSubmitting ? "Submitting..." : "Submit"}</button>
-  );
+export const SubmitButton = ({
+  formstand,
+  ...rest
+}: ComponentProps<"button"> & { formstand: Formstand }) => {
+  const isSubmitting = formstand.useIsSubmitting();
+  return <button {...rest}>{isSubmitting ? "Submitting..." : "Submit"}</button>;
 };

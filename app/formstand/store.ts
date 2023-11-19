@@ -85,10 +85,10 @@ export const makeFormStore = <Data extends GenericObj, Output>({
   validator,
 }: FormstandOptions<Data, Output>) =>
   createStore<FormStoreState<Data, Output>>()((set, get) => ({
-    isSubmitting: false,
     validator,
     values: initialValues,
     meta: {},
+    isSubmitting: false,
 
     validate: async () => {
       const result = await get().validator(get().values);
