@@ -11,13 +11,6 @@ const getIssuesForError = (err: z.ZodError<any>): z.ZodIssue[] => {
   });
 };
 
-function pathToString(array: (string | number)[]): string {
-  return array.reduce(function (string: string, item: string | number) {
-    const prefix = string === "" ? "" : ".";
-    return string + (isNaN(Number(item)) ? prefix + item : "[" + item + "]");
-  }, "");
-}
-
 export const zodAdapter =
   <T, U extends z.ZodTypeDef>(schema: z.Schema<T, U, unknown>): Validator<T> =>
   async (data) => {
@@ -26,7 +19,7 @@ export const zodAdapter =
 
     const fieldErrors: FieldErrors = {};
     getIssuesForError(result.error).forEach((issue) => {
-      const path = pathToString(issue.path);
+      const path = issue.path.join(".");
       if (!fieldErrors[path]) fieldErrors[path] = issue.message;
     });
     return { errors: fieldErrors };

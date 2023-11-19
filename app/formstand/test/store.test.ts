@@ -1,10 +1,25 @@
-import { expect, it } from "vitest";
+import { expect, expectTypeOf, it } from "vitest";
 
+import type { DataAtPath, Paths } from "../store";
 import { defaultMeta, makeFormStore } from "../store";
 import { zodAdapter } from "../zod-validator";
 import { z } from "zod";
 
 const dummyValidator = (data: unknown) => ({ errors: {} });
+
+it("type tests", () => {
+  expectTypeOf<DataAtPath<{ a: string }, "a">>().toMatchTypeOf<string>();
+  expectTypeOf<
+    DataAtPath<{ a: { b: { c: number } } }, "a.b.c">
+  >().toMatchTypeOf<number>();
+  expectTypeOf<DataAtPath<{ a: number[] }, "a.0">>().toMatchTypeOf<number>();
+  expectTypeOf<Paths<{ a: { b: string }[] }>>(
+    "a.0.b"
+  ).not.toMatchTypeOf<"a.b">();
+
+  // @ts-expect-error
+  expectTypeOf<Paths<{ a: { b: string }[] }>>("a.0.c");
+});
 
 it("should set values", () => {
   const store = makeFormStore({
@@ -40,6 +55,30 @@ it("should set nested values", () => {
   });
   store.getState().setValue("bob.ross.name", "bob");
   expect(store.getState().values.bob.ross.name).toBe("bob");
+});
+
+it("should set array values", () => {
+  const store = makeFormStore({
+    initialValues: {
+      names: ["bob", "ross"],
+      info: [
+        {
+          name: "bob",
+          age: 10,
+        },
+        {
+          name: "ross",
+          age: 20,
+        },
+      ],
+    },
+    validator: dummyValidator,
+  });
+  store.getState().setValue("names.0", "jim");
+  expect(store.getState().values.names[0]).toBe("jim");
+
+  store.getState().setValue("info.1.age", 30);
+  expect(store.getState().values.info[1]?.age).toBe(30);
 });
 
 it("should update meta", () => {
