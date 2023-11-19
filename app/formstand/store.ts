@@ -8,14 +8,6 @@ export type Paths<T> = T extends object
     }[keyof T]
   : never;
 
-// type Leaves<T> = T extends object
-//   ? {
-//       [K in keyof T]: `${Exclude<K, symbol>}${Leaves<T[K]> extends never
-//         ? ""
-//         : `.${Leaves<T[K]>}`}`;
-//     }[keyof T]
-//   : never;
-
 export type FieldErrors = Record<string, string>;
 export type ValidatorResult<T> = { errors: FieldErrors } | { data: T };
 export type Validator<T> = (
@@ -48,12 +40,15 @@ export type GenericObj = Record<string, any>;
 
 export type FormStoreState<Data extends GenericObj, Output> = {
   validator: Validator<Output>;
+  validate: () => Promise<ValidatorResult<Output>>;
+
   values: Data;
   getValue: <Path extends Paths<Data>>(path: Path) => DataAtPath<Data, Path>;
   setValue: <Path extends Paths<Data>>(
     path: Path,
     value: DataAtPath<Data, Path>
   ) => void;
+
   onChange: <Path extends Paths<Data>>(
     path: Path,
     value: DataAtPath<Data, Path>
@@ -72,12 +67,37 @@ export type FormstandOptions<Data extends GenericObj, Output> = {
   validator: Validator<Output>;
 };
 
+const updateError = <State extends FormStoreState<any, unknown>>(
+  path: string,
+  error: string,
+  prev: State
+): State => {
+  const newMeta = R.pipe(prev.meta[path] ?? defaultMeta, R.set("error", error));
+  return {
+    ...prev,
+    meta: R.set(prev.meta, path, newMeta),
+  };
+};
+
 export const makeFormStore = <Data extends GenericObj, Output>({
   initialValues,
   validator,
 }: FormstandOptions<Data, Output>) =>
   createStore<FormStoreState<Data, Output>>()((set, get) => ({
     validator,
+    validate: async () => {
+      const result = await get().validator(get().values);
+      if ("errors" in result) {
+        set((prev) =>
+          Object.entries(result.errors).reduce(
+            (state, [path, error]) => updateError(path, error, state),
+            prev
+          )
+        );
+      }
+      return result;
+    },
+
     values: initialValues,
     meta: {},
     getValue: (path) => {
@@ -144,15 +164,6 @@ export const makeFormStore = <Data extends GenericObj, Output>({
       });
     },
     setError: (path, error) => {
-      set((prev) => {
-        const newMeta = R.pipe(
-          prev.meta[path] ?? defaultMeta,
-          R.set("error", error)
-        );
-        return {
-          ...prev,
-          meta: R.set(prev.meta, path, newMeta),
-        };
-      });
+      set((prev) => updateError(path, error, prev));
     },
   }));

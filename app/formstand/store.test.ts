@@ -1,6 +1,8 @@
 import { expect, it } from "vitest";
 
 import { defaultMeta, makeFormStore } from "./store";
+import { zodAdapter } from "./zod-validator";
+import { z } from "zod";
 
 const dummyValidator = (data: unknown) => ({ errors: {} });
 
@@ -89,5 +91,29 @@ it("should handle change and blur events", () => {
     ...defaultMeta,
     dirty: true,
     touched: true,
+  });
+});
+
+it("should validate", async () => {
+  const store = makeFormStore({
+    validator: zodAdapter(
+      z.object({
+        name: z.string().min(5, { message: "Name too short" }),
+        age: z.number().min(18, { message: "Must be 18 or older" }),
+      })
+    ),
+    initialValues: {
+      name: "test",
+      age: 10,
+    },
+  });
+  await store.getState().validate();
+  expect(store.getState().getMeta("name")).toEqual({
+    ...defaultMeta,
+    error: "Name too short",
+  });
+  expect(store.getState().getMeta("age")).toEqual({
+    ...defaultMeta,
+    error: "Must be 18 or older",
   });
 });
