@@ -47,6 +47,10 @@ export type FormStoreState<Data extends GenericObj> = {
     path: Path,
     value: DataAtPath<Data, Path>
   ) => void;
+  onChange: <Path extends Paths<Data>>(
+    path: Path,
+    value: DataAtPath<Data, Path>
+  ) => void;
 
   meta: Record<string, FieldMeta>;
   getMeta: (path: Paths<Data>) => FieldMeta;
@@ -75,6 +79,17 @@ export const makeFormStore = <Data extends GenericObj>(initialValues: Data) =>
       set((prev) => ({
         ...prev,
         values: R.setPath(prev.values, path.split(".") as any, value),
+      }));
+    },
+    onChange: (path, value) => {
+      set((prev) => ({
+        ...prev,
+        values: R.setPath(prev.values, path.split(".") as any, value),
+        meta: R.set(prev.meta, path as any, {
+          ...prev.getMeta(path),
+          dirty: true,
+          touched: true,
+        }),
       }));
     },
 

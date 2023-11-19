@@ -56,3 +56,17 @@ it("should update meta", () => {
     error: "Some error",
   });
 });
+
+it("should handle change events", () => {
+  const store = makeFormStore({
+    name: "test",
+    age: 10,
+  });
+  store.getState().onChange("name", "bob");
+  expect(store.getState().values.name).toBe("bob");
+  expect(store.getState().getMeta("name")).toEqual({
+    ...defaultMeta,
+    touched: true,
+    dirty: true,
+  });
+});

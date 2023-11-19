@@ -8,14 +8,7 @@ const Input = ({
   const field = useField(name);
   return (
     <div>
-      <input
-        {...rest}
-        name={name}
-        onChange={(e) => {
-          field.setValue(e.target.value);
-        }}
-        value={field.value}
-      />
+      <input {...field.getInputProps()} {...rest} />
       <p style={{ color: "red" }}>{field.meta.error}</p>
     </div>
   );

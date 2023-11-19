@@ -51,6 +51,7 @@ export const useField = (name: string) => {
   const meta = useStore(store, (state) => state.getMeta(name));
   const value = useStore(store, (state) => state.getValue(name));
   const setValue = useStore(store, (state) => state.setValue);
+  const onChange = useStore(store, (state) => state.onChange);
 
   const setFieldValue = useCallback(
     (value: any) => {
@@ -59,9 +60,20 @@ export const useField = (name: string) => {
     [name, setValue]
   );
 
+  const getInputProps = useCallback(() => {
+    return {
+      name,
+      onChange: (e: any) => {
+        onChange(name, e.target.value);
+      },
+      value,
+    };
+  }, [name, onChange, value]);
+
   return {
     meta,
     value,
     setValue: setFieldValue,
+    getInputProps,
   };
 };
