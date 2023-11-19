@@ -1,12 +1,13 @@
 import { expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import { z } from "zod";
-import type { Formstand } from "../form";
+import type { Formstand } from "../formstand";
 import { useForm } from "../form";
 import { zodAdapter } from "../zod-validator";
 import userEvent from "@testing-library/user-event";
 import { Input, SubmitButton } from "../demo-components";
 import type { ValidationBehaviorConfig } from "../store";
+import { handleSubmit } from "../react";
 
 const nameSchema = z.object({
   first: z
@@ -39,7 +40,7 @@ function WithSubforms({
 
   return (
     <form
-      onSubmit={form.handleSubmit((data) => {
+      onSubmit={handleSubmit(form, (data) => {
         onSubmit(data);
       })}
     >

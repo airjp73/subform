@@ -5,6 +5,7 @@ import {
   SubmitButton,
 } from "~/formstand/demo-components";
 import { useForm } from "~/formstand/form";
+import { handleSubmit } from "~/formstand/react";
 import { zodAdapter } from "~/formstand/zod-validator";
 
 export default function FormPage() {
@@ -27,7 +28,7 @@ export default function FormPage() {
 
   return (
     <form
-      onSubmit={form.handleSubmit(async (data) => {
+      onSubmit={handleSubmit(form, async (data) => {
         await new Promise((r) => setTimeout(r, 1000));
         alert(JSON.stringify(data));
       })}

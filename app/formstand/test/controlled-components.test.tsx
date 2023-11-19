@@ -5,6 +5,7 @@ import { ControlledInput, SubmitButton } from "../demo-components";
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { handleSubmit } from "../react";
 
 function Form({ onSubmit }: { onSubmit: (data: any) => void }) {
   const form = useForm({
@@ -20,7 +21,7 @@ function Form({ onSubmit }: { onSubmit: (data: any) => void }) {
 
   return (
     <form
-      onSubmit={form.handleSubmit((data) => {
+      onSubmit={handleSubmit(form, (data) => {
         onSubmit(data);
       })}
     >

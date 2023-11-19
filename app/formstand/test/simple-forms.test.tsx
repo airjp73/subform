@@ -6,6 +6,7 @@ import { zodAdapter } from "../zod-validator";
 import userEvent from "@testing-library/user-event";
 import { Input, SubmitButton } from "../demo-components";
 import type { ValidationBehaviorConfig } from "../store";
+import { handleSubmit } from "../react";
 
 function SimpleForm({
   onSubmit,
@@ -40,7 +41,7 @@ function SimpleForm({
 
   return (
     <form
-      onSubmit={form.handleSubmit((data) => {
+      onSubmit={handleSubmit(form, (data) => {
         onSubmit(data);
       })}
     >

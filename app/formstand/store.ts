@@ -114,7 +114,7 @@ export const makeFormStore = <Data extends GenericObj, Output>({
       }));
       return result;
     },
-    submit: async (submitter) => {
+    submit: async (submitFunction) => {
       set((prev) =>
         R.pipe(
           prev,
@@ -124,7 +124,7 @@ export const makeFormStore = <Data extends GenericObj, Output>({
       );
       const result = await get().validate();
       if ("data" in result) {
-        await submitter(result.data);
+        await submitFunction(result.data);
       }
       set((prev) => R.set(prev, "isSubmitting", false));
     },
