@@ -56,3 +56,45 @@ export const submit = <Output>(
   formstand: Formstand<any, any, Output>,
   submitter: (data: Output) => void | Promise<void>
 ) => getStore(formstand).getState().submit(submitter);
+
+export const array = {
+  pop: <Data extends GenericObj>(formstand: Formstand<Data>) =>
+    getStore(formstand).getState().array.pop(formstand.path),
+  push: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    value: DataAtPath<Data, Paths<Data>>
+  ) => getStore(formstand).getState().array.push(formstand.path, value),
+  remove: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    index: number
+  ) => getStore(formstand).getState().array.remove(formstand.path, index),
+  swap: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    indexA: number,
+    indexB: number
+  ) =>
+    getStore(formstand).getState().array.swap(formstand.path, indexA, indexB),
+  move: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    from: number,
+    to: number
+  ) => getStore(formstand).getState().array.move(formstand.path, from, to),
+  insert: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    index: number,
+    value: DataAtPath<Data, Paths<Data>>
+  ) =>
+    getStore(formstand).getState().array.insert(formstand.path, index, value),
+  unshift: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    value: DataAtPath<Data, Paths<Data>>
+  ) => getStore(formstand).getState().array.unshift(formstand.path, value),
+  shift: <Data extends GenericObj>(formstand: Formstand<Data>) =>
+    getStore(formstand).getState().array.shift(formstand.path),
+  replace: <Data extends GenericObj>(
+    formstand: Formstand<Data>,
+    index: number,
+    value: DataAtPath<Data, Paths<Data>>
+  ) =>
+    getStore(formstand).getState().array.replace(formstand.path, index, value),
+};

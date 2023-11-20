@@ -232,8 +232,9 @@ describe("arrays", () => {
         names: ["bob", "ross", "jim"],
       },
     });
-    store.getState().array.remove("names", 1);
+    const item = store.getState().array.remove("names", 1);
     expect(store.getState().values.names).toEqual(["bob", "jim"]);
+    expect(item).toEqual("ross");
   });
 
   it("should replace", () => {
@@ -243,8 +244,9 @@ describe("arrays", () => {
         names: ["bob", "ross"],
       },
     });
-    store.getState().array.replace("names", 1, "jim");
+    const item = store.getState().array.replace("names", 1, "jim");
     expect(store.getState().values.names).toEqual(["bob", "jim"]);
+    expect(item).toEqual("ross");
   });
 
   it("should shift", () => {

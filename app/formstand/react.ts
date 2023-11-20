@@ -42,10 +42,6 @@ export const useHasSubmitBeenAttempted = <Data extends GenericObj>(
 ): boolean =>
   useStore(getStore(formstand), (state) => state.hasSubmitBeenAttempted);
 
-export const useValidationBehavior = <Data extends GenericObj>(
-  formstand: Formstand<Data>
-) => useStore(getStore(formstand), (state) => state.validationBehavior);
-
 export const handleSubmit =
   <Output>(
     formstand: Formstand<any, any, Output>,
