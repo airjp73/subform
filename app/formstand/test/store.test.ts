@@ -1,4 +1,4 @@
-import { expect, expectTypeOf, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { DataAtPath, Paths } from "../store";
 import { defaultMeta, makeFormStore } from "../store";
@@ -176,5 +176,108 @@ it("should validate", async () => {
   expect(store.getState().getMeta("age")).toEqual({
     ...defaultMeta,
     error: "Must be 18 or older",
+  });
+});
+
+describe("arrays", () => {
+  it("should pop", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    const value = store.getState().array.pop("names");
+    expect(store.getState().values.names).toEqual(["bob"]);
+    expect(value).toEqual("ross");
+  });
+
+  it("should insert", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    store.getState().array.insert("names", 1, "jim");
+    expect(store.getState().values.names).toEqual(["bob", "jim", "ross"]);
+  });
+
+  it("should move", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["foo", "bar", "baz", "qux"],
+      },
+    });
+    store.getState().array.move("names", 1, 2);
+    expect(store.getState().values.names).toEqual(["foo", "baz", "bar", "qux"]);
+  });
+
+  it("should push", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    store.getState().array.push("names", "jim");
+    expect(store.getState().values.names).toEqual(["bob", "ross", "jim"]);
+  });
+
+  it("should remove", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross", "jim"],
+      },
+    });
+    store.getState().array.remove("names", 1);
+    expect(store.getState().values.names).toEqual(["bob", "jim"]);
+  });
+
+  it("should replace", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    store.getState().array.replace("names", 1, "jim");
+    expect(store.getState().values.names).toEqual(["bob", "jim"]);
+  });
+
+  it("should shift", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    const value = store.getState().array.shift("names");
+    expect(store.getState().values.names).toEqual(["ross"]);
+    expect(value).toEqual("bob");
+  });
+
+  it("should unshift", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    store.getState().array.unshift("names", "jim");
+    expect(store.getState().values.names).toEqual(["jim", "bob", "ross"]);
+  });
+
+  it("should swap", () => {
+    const store = makeFormStore({
+      validator: dummyValidator,
+      initialValues: {
+        names: ["bob", "ross"],
+      },
+    });
+    store.getState().array.swap("names", 0, 1);
+    expect(store.getState().values.names).toEqual(["ross", "bob"]);
   });
 });

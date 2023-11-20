@@ -112,6 +112,47 @@ export type FormStoreState<Data extends GenericObj, Output> = {
   setTouched: (path: Paths<Data>, value: boolean) => void;
   setDirty: (path: Paths<Data>, value: boolean) => void;
   setError: (path: Paths<Data>, error: string) => void;
+
+  array: {
+    push: <Path extends Paths<Data>>(
+      path: Path,
+      value: DataAtPath<Data, Path>[number]
+    ) => void;
+    remove: <Path extends Paths<Data>>(
+      path: Path,
+      index: number
+    ) => DataAtPath<Data, Path>[number];
+    swap: <Path extends Paths<Data>>(
+      path: Path,
+      indexA: number,
+      indexB: number
+    ) => void;
+    move: <Path extends Paths<Data>>(
+      path: Path,
+      from: number,
+      to: number
+    ) => void;
+    insert: <Path extends Paths<Data>>(
+      path: Path,
+      index: number,
+      value: DataAtPath<Data, Path>[number]
+    ) => void;
+    unshift: <Path extends Paths<Data>>(
+      path: Path,
+      value: DataAtPath<Data, Path>[number]
+    ) => void;
+    pop: <Path extends Paths<Data>>(
+      path: Path
+    ) => DataAtPath<Data, Path>[number];
+    shift: <Path extends Paths<Data>>(
+      path: Path
+    ) => DataAtPath<Data, Path>[number];
+    replace: <Path extends Paths<Data>>(
+      path: Path,
+      index: number,
+      value: DataAtPath<Data, Path>[number]
+    ) => void;
+  };
 };
 
 export type FormstandOptions<Data extends GenericObj, Output> = {
@@ -230,6 +271,181 @@ export const makeFormStore = <Data extends GenericObj, Output>({
             errors: R.set(prev.errors, path, error),
           };
         });
+      },
+
+      array: {
+        pop: (path) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, array.length - 1, 1, []) as any
+              ),
+            };
+          });
+        },
+        insert: (path, index, value) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, index, 0, [value]) as any
+              ),
+            };
+          });
+        },
+        move: (path, from, to) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            const movedItem = array[from];
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.pipe(
+                  array,
+                  R.splice(from, 1, []),
+                  R.splice(to, 0, [movedItem])
+                ) as any
+              ),
+            };
+          });
+        },
+
+        push: (path, value) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, array.length, 0, [value]) as any
+              ),
+            };
+          });
+        },
+
+        remove: (path, index) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, index, 1, []) as any
+              ),
+            };
+          });
+        },
+
+        replace: (path, index, value) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, index, 1, [value]) as any
+              ),
+            };
+          });
+        },
+
+        shift: (path) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, 0, 1, []) as any
+              ),
+            };
+          });
+        },
+
+        swap: (path, indexA, indexB) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            const itemA = array[indexA];
+            const itemB = array[indexB];
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.pipe(
+                  array,
+                  R.splice(indexA, 1, [itemB]),
+                  R.splice(indexB, 1, [itemA])
+                ) as any
+              ),
+            };
+          });
+        },
+
+        unshift: (path, value) => {
+          const segments = getPathSegments(path);
+
+          set((prev) => {
+            const array = R.pathOr(prev.values, segments as any, [] as any);
+            if (!Array.isArray(array)) return prev;
+
+            return {
+              ...prev,
+              values: R.setPath(
+                prev.values,
+                segments as any,
+                R.splice(array, 0, 0, [value]) as any
+              ),
+            };
+          });
+        },
       },
     }))
   );
