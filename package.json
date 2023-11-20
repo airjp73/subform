@@ -4,17 +4,10 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "remix build",
-    "dev": "remix dev --manual",
-    "start": "remix-serve ./build/index.js",
     "typecheck": "tsc",
     "test": "vitest"
   },
   "dependencies": {
-    "@remix-run/css-bundle": "^2.3.0",
-    "@remix-run/node": "^2.3.0",
-    "@remix-run/react": "^2.3.0",
-    "@remix-run/serve": "^2.3.0",
     "@testing-library/user-event": "^14.5.1",
     "isbot": "^3.6.8",
     "react": "^18.2.0",
@@ -26,8 +19,6 @@
     "zustand": "^4.4.6"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.3.0",
-    "@remix-run/eslint-config": "^2.3.0",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.2.20",
