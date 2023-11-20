@@ -3,8 +3,18 @@ import * as R from "remeda";
 import invariant from "tiny-invariant";
 import { devtools } from "zustand/middleware";
 
-export type Paths<T> = T extends Array<infer Item>
+type TupleIndeces<T extends any[]> = T extends [any, ...infer Rest]
+  ? TupleIndeces<Rest> | Rest["length"]
+  : never;
+
+export type Paths<T> = T extends [any, ...any[]]
+  ? {
+      [K in TupleIndeces<T>]: `${K}` | `${K}.${Paths<T[K]>}`;
+    }[TupleIndeces<T>]
+  : T extends Array<infer Item>
   ? `${number}${"" | `.${Paths<Item>}`}`
+  : T extends Date
+  ? never
   : T extends object
   ? {
       [K in keyof T]: `${Exclude<K, symbol>}${"" | `.${Paths<T[K]>}`}`;
@@ -43,8 +53,6 @@ export type DataAtPath<
 > = Path extends `${infer Key}.${infer Rest}`
   ? NestedPath<Data, Key, Rest>
   : LeafPath<Data, Path>;
-
-type t = DataAtPath<{ a: number[] }, "a.0">;
 
 export type FieldMeta = {
   touched: boolean;

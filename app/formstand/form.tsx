@@ -1,7 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useRef } from "react";
 import {
-  makeFormStore,
   type FieldMeta,
   type FormstandOptions,
   type GenericObj,
@@ -114,11 +113,6 @@ export const useForm = <Data extends GenericObj, Output>(
   opts: FormstandOptions<Data, Output>
 ): Formstand<Data, Data, Output> => {
   const storeRef = useRef<Formstand<Data, Data, Output> | null>(null);
-  if (!storeRef.current)
-    storeRef.current = createFormstand(
-      null as any,
-      "" as any,
-      makeFormStore(opts)
-    ) as any;
+  if (!storeRef.current) storeRef.current = createFormstand(opts);
   return storeRef.current as any;
 };
