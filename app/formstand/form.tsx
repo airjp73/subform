@@ -119,27 +119,29 @@ export function useField<Data>(
   };
 }
 
-export type UseFieldArrayOpts<Data> = {
-  formstand: Formstand<Data>;
+export type UseFieldArrayOpts<Item> = {
+  formstand: Formstand<Item[]>;
   validationBehavior?: FieldArrayValidationBehaviorConfig;
 };
 
-export type UseFieldArrayResult<Data extends any[]> = {
-  keys: string[];
+export type UseFieldArrayResult<Item> = {
+  map: <Output>(
+    fn: (formstand: Formstand<Item>, key: string, index: number) => Output
+  ) => Output[];
   pop: () => void;
-  push: (item: Data[number]) => void;
+  push: (item: Item) => void;
   remove: (index: number) => void;
   swap: (indexA: number, indexB: number) => void;
   move: (from: number, to: number) => void;
-  insert: (index: number, item: Data[number]) => void;
-  unshift: (item: Data[number]) => void;
+  insert: (index: number, item: Item) => void;
+  unshift: (item: Item) => void;
   shift: () => void;
-  replace: (index: number, items: Data) => void;
+  replace: (index: number, items: Item) => void;
 };
 
-export const useFieldArray = <Data extends any[]>(
-  opts: UseFieldArrayOpts<Data>
-): UseFieldArrayResult<Data> => {
+export const useFieldArray = <Item,>(
+  opts: UseFieldArrayOpts<Item>
+): UseFieldArrayResult<Item> => {
   const formLevelValidationBehavior = useStore(
     getStore(opts.formstand),
     (state) => state.fieldArrayValidationBehavior
@@ -170,8 +172,21 @@ export const useFieldArray = <Data extends any[]>(
   if (keys.current.length !== arrayLength)
     keys.current = R.range(0, arrayLength).map(simpleId);
 
+  const formstandInstance = opts.formstand;
+
   return {
-    keys: keys.current,
+    map: useCallback(
+      <Output,>(
+        fn: (formstand: Formstand<Item>, key: string, index: number) => Output
+      ) => {
+        return keys.current.map((key, index) => {
+          const formstand = formstandInstance(`${index}` as any);
+          return fn(formstand, key, index);
+        });
+      },
+      // For some reason, the linter won't let us put `opts.formstand` here
+      [formstandInstance]
+    ),
     pop: useCallback(() => {
       array.pop(opts.formstand);
       keys.current = A.pop(keys.current);
@@ -180,8 +195,8 @@ export const useFieldArray = <Data extends any[]>(
     }, [maybeValidate, opts.formstand]),
 
     push: useCallback(
-      (item: Data[number]) => {
-        array.push(opts.formstand, item);
+      (item: Item) => {
+        array.push(opts.formstand, item as any);
         keys.current = A.push(keys.current, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
@@ -220,8 +235,8 @@ export const useFieldArray = <Data extends any[]>(
     ),
 
     insert: useCallback(
-      (index: number, item: Data[number]) => {
-        array.insert(opts.formstand, index, item);
+      (index: number, item: Item) => {
+        array.insert(opts.formstand, index, item as any);
         keys.current = A.insert(keys.current, index, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
@@ -230,8 +245,8 @@ export const useFieldArray = <Data extends any[]>(
     ),
 
     unshift: useCallback(
-      (item: Data[number]) => {
-        array.unshift(opts.formstand, item);
+      (item: Item) => {
+        array.unshift(opts.formstand, item as any);
         keys.current = A.unshift(keys.current, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
@@ -247,8 +262,8 @@ export const useFieldArray = <Data extends any[]>(
     }, [maybeValidate, opts.formstand]),
 
     replace: useCallback(
-      (index: number, item: Data[number]) => {
-        array.replace(opts.formstand, index, item);
+      (index: number, item: Item) => {
+        array.replace(opts.formstand, index, item as any);
         keys.current = A.replace(keys.current, index, simpleId());
         maybeValidate();
         forceUpdate();

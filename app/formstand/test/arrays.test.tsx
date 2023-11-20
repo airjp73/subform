@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { z } from "zod";
-import { useField, useForm } from "../form";
+import { useFieldArray, useForm } from "../form";
 import { zodAdapter } from "../zod-validator";
 import userEvent from "@testing-library/user-event";
 import { Input, SubmitButton } from "../demo-components";
@@ -43,8 +43,7 @@ function ArrayForm({
     validationBehavior,
   });
 
-  const names = form("names");
-  const namesArray = useField({ formstand: names });
+  const names = useFieldArray({ formstand: form("names") });
 
   return (
     <form
@@ -52,38 +51,129 @@ function ArrayForm({
         onSubmit(data);
       })}
     >
-      {namesArray.value.map((name, index) => (
-        <div key={index}>
-          <label>
-            First name
-            <Input formstand={names("0.first")} />
-          </label>
-          <label>
-            Last name
-            <Input formstand={names("0.last")} />
-          </label>
-        </div>
-      ))}
+      {names.map((name, key, index) => {
+        return (
+          <div key={key} data-testid="name-fields">
+            <label>
+              First name
+              <Input formstand={name("first")} />
+            </label>
+            <label>
+              Last name
+              <Input formstand={name("last")} />
+            </label>
+            <button type="button" onClick={() => names.remove(index)}>
+              Remove
+            </button>
+          </div>
+        );
+      })}
+      <button type="button" onClick={() => names.push({ first: "", last: "" })}>
+        Push
+      </button>
+      <button
+        type="button"
+        onClick={() => names.unshift({ first: "", last: "" })}
+      >
+        Unshift
+      </button>
+      <button type="button" onClick={() => names.shift()}>
+        Shift
+      </button>
+      <button type="button" onClick={() => names.pop()}>
+        Pop
+      </button>
+      <button type="button" onClick={() => names.swap(0, 1)}>
+        Swap
+      </button>
+      <button type="button" onClick={() => names.move(0, 2)}>
+        Move
+      </button>
+      <button
+        type="button"
+        onClick={() => names.insert(1, { first: "", last: "" })}
+      >
+        Insert
+      </button>
       <SubmitButton formstand={form} />
     </form>
   );
 }
 
-it("should submit a basic form", async () => {
+it("should submit a form with arrays", async () => {
   const cb = vi.fn();
   render(<ArrayForm onSubmit={cb} />);
+
+  const firstName = () =>
+    screen.getAllByRole("textbox", { name: /first name/i });
+  const lastName = () => screen.getAllByRole("textbox", { name: /last name/i });
+
+  expect(screen.getAllByTestId("name-fields")).toHaveLength(1);
+  await userEvent.type(firstName()[0], "John");
+  await userEvent.type(lastName()[0], "Doe");
+
+  await userEvent.click(screen.getByText("Push"));
+  expect(screen.getAllByTestId("name-fields")).toHaveLength(2);
+  await userEvent.type(firstName()[1], "Bob");
+  await userEvent.type(lastName()[1], "Ross");
+
+  await userEvent.click(screen.getByText("Unshift"));
+  expect(screen.getAllByTestId("name-fields")).toHaveLength(3);
+  await userEvent.type(firstName()[0], "Luke");
+  await userEvent.type(lastName()[0], "Skywalker");
+
+  expect(firstName().map((el) => (el as any).value)).toEqual([
+    "Luke",
+    "John",
+    "Bob",
+  ]);
+
+  await userEvent.click(screen.getByText("Swap"));
+  expect(firstName().map((el) => (el as any).value)).toEqual([
+    "John",
+    "Luke",
+    "Bob",
+  ]);
+
+  await userEvent.click(screen.getByText("Move"));
+  expect(firstName().map((el) => (el as any).value)).toEqual([
+    "Luke",
+    "Bob",
+    "John",
+  ]);
+
+  await userEvent.click(screen.getByText("Insert"));
+  expect(firstName().map((el) => (el as any).value)).toEqual([
+    "Luke",
+    "",
+    "Bob",
+    "John",
+  ]);
+  await userEvent.type(firstName()[1], "Han");
+  await userEvent.type(lastName()[1], "Solo");
+  expect(firstName().map((el) => (el as any).value)).toEqual([
+    "Luke",
+    "Han",
+    "Bob",
+    "John",
+  ]);
+
+  await userEvent.click(screen.getAllByText("Remove")[1]);
+  expect(firstName().map((el) => (el as any).value)).toEqual([
+    "Luke",
+    "Bob",
+    "John",
+  ]);
+
+  await userEvent.click(screen.getByText("Shift"));
+  expect(firstName().map((el) => (el as any).value)).toEqual(["Bob", "John"]);
+
+  await userEvent.click(screen.getByText("Pop"));
+  expect(firstName().map((el) => (el as any).value)).toEqual(["Bob"]);
+
   await userEvent.click(screen.getByText("Submit"));
-  expect(screen.getByText("first name too short")).toBeInTheDocument();
-  expect(screen.getByText("last name too short")).toBeInTheDocument();
-  await userEvent.type(screen.getByLabelText(/first name/i), "John");
-  await userEvent.type(screen.getByLabelText(/last name/i), "John");
-  await userEvent.click(screen.getByText("Submit"));
+  expect(cb).toBeCalledTimes(1);
   expect(cb).toHaveBeenCalledWith({
-    names: [
-      {
-        first: "John",
-        last: "John",
-      },
-    ],
+    names: [{ first: "Bob", last: "Ross" }],
   });
 });
