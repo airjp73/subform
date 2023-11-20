@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
-import { useField } from "./form";
-import type { Formstand } from "./formstand";
-import { useIsSubmitting } from "./react";
+import { useField } from "../form";
+import type { Formstand } from "../formstand";
+import { useIsSubmitting } from "../react";
 
 export function Input({
   formstand,

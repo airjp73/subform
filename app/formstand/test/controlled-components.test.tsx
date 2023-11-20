@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { useForm } from "../form";
 import { zodAdapter } from "../zod-validator";
-import { ControlledInput, SubmitButton } from "../demo-components";
+import { ControlledInput, SubmitButton } from "./test-components";
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

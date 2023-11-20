@@ -5,7 +5,7 @@ import type { Formstand } from "../formstand";
 import { useForm } from "../form";
 import { zodAdapter } from "../zod-validator";
 import userEvent from "@testing-library/user-event";
-import { Input, SubmitButton } from "../demo-components";
+import { Input, SubmitButton } from "./test-components";
 import type { ValidationBehaviorConfig } from "../store";
 import { handleSubmit } from "../react";
 

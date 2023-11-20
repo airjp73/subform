@@ -3,7 +3,7 @@ import {
   ControlledInput,
   Input,
   SubmitButton,
-} from "~/formstand/demo-components";
+} from "~/formstand/test/test-components";
 import { useField, useForm } from "~/formstand/form";
 import { handleSubmit } from "~/formstand/react";
 import { zodAdapter } from "~/formstand/zod-validator";
