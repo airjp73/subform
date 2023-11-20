@@ -9,7 +9,12 @@ import type {
   ValidationBehaviorConfig,
 } from "./store";
 import { createFormstand, type Formstand } from "./formstand";
-import { useHasSubmitBeenAttempted, useMeta, useValue } from "./react";
+import {
+  useError,
+  useHasSubmitBeenAttempted,
+  useMeta,
+  useValue,
+} from "./react";
 import {
   array,
   handleBlur,
@@ -128,6 +133,7 @@ export type UseFieldArrayResult<Item> = {
   map: <Output>(
     fn: (formstand: Formstand<Item>, key: string, index: number) => Output
   ) => Output[];
+  error: string | undefined;
   pop: () => void;
   push: (item: Item) => void;
   remove: (index: number) => void;
@@ -175,6 +181,7 @@ export const useFieldArray = <Item,>(
   const formstandInstance = opts.formstand;
 
   return {
+    error: useError(opts.formstand),
     map: useCallback(
       <Output,>(
         fn: (formstand: Formstand<Item>, key: string, index: number) => Output

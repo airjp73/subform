@@ -18,18 +18,20 @@ function ArrayForm({
   const form = useForm({
     validator: zodAdapter(
       z.object({
-        names: z.array(
-          z.object({
-            first: z
-              .string()
-              .min(2, "first name too short")
-              .max(10, "first name too long"),
-            last: z
-              .string()
-              .min(2, "last name too short")
-              .max(10, "last name too long"),
-          })
-        ),
+        names: z
+          .array(
+            z.object({
+              first: z
+                .string()
+                .min(2, "first name too short")
+                .max(10, "first name too long"),
+              last: z
+                .string()
+                .min(2, "last name too short")
+                .max(10, "last name too long"),
+            })
+          )
+          .max(2, "too many names"),
       })
     ),
     initialValues: {
@@ -68,6 +70,7 @@ function ArrayForm({
           </div>
         );
       })}
+      {names.error && <p>{names.error}</p>}
       <button type="button" onClick={() => names.push({ first: "", last: "" })}>
         Push
       </button>
@@ -116,11 +119,13 @@ it("should submit a form with arrays", async () => {
   expect(screen.getAllByTestId("name-fields")).toHaveLength(2);
   await userEvent.type(firstName()[1], "Bob");
   await userEvent.type(lastName()[1], "Ross");
+  expect(screen.queryByText("too many names")).not.toBeInTheDocument();
 
   await userEvent.click(screen.getByText("Unshift"));
   expect(screen.getAllByTestId("name-fields")).toHaveLength(3);
   await userEvent.type(firstName()[0], "Luke");
   await userEvent.type(lastName()[0], "Skywalker");
+  expect(screen.getByText("too many names")).toBeInTheDocument();
 
   expect(firstName().map((el) => (el as any).value)).toEqual([
     "Luke",
@@ -167,6 +172,7 @@ it("should submit a form with arrays", async () => {
 
   await userEvent.click(screen.getByText("Shift"));
   expect(firstName().map((el) => (el as any).value)).toEqual(["Bob", "John"]);
+  expect(screen.queryByText("too many names")).not.toBeInTheDocument();
 
   await userEvent.click(screen.getByText("Pop"));
   expect(firstName().map((el) => (el as any).value)).toEqual(["Bob"]);
