@@ -1,9 +1,9 @@
 import { useStore } from "zustand";
-import type { Subform } from "./subform";
-import type { DataAtPath, FieldMeta, GenericObj, Paths } from "./store";
-import { getStore } from "./internal";
+import type { Subform } from "../subform";
+import type { DataAtPath, FieldMeta, GenericObj, Paths } from "../store";
+import { getStore } from "../internal";
 import type { FormEvent } from "react";
-import { submit } from "./operations";
+import { submit } from "../operations";
 
 export const useValue = <Data extends GenericObj>(
   subform: Subform<Data>

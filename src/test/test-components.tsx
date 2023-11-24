@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
-import { useField } from "../form";
+import { useField } from "../react/form";
 import type { Subform } from "../subform";
-import { useIsSubmitting } from "../react";
+import { useIsSubmitting } from "../react/react";
 
 export function Input({
   subform,

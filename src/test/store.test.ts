@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { DataAtPath, Paths } from "../store";
 import { defaultMeta, makeFormStore } from "../store";
-import { zodAdapter } from "../adapters/zod";
+import { zodAdapter } from "../zod";
 import { z } from "zod";
 import type { Subform } from "../subform";
 import { createSubform } from "../subform";

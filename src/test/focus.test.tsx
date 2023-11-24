@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { handleSubmit } from "../react";
 import { createSubform } from "../subform";
-import { zodAdapter } from "../adapters/zod";
+import { zodAdapter } from "../zod";
 import { expect, it, vi } from "vitest";
 import { z } from "zod";
 import { Input } from "./test-components";

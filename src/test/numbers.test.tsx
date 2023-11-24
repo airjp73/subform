@@ -1,12 +1,12 @@
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { z } from "zod";
-import { useForm } from "../form";
-import { zodAdapter } from "../adapters/zod";
+import { useForm } from "../react/form";
+import { zodAdapter } from "../zod";
 import userEvent from "@testing-library/user-event";
 import { NumberInput, SubmitButton } from "./test-components";
 import type { ValidationBehaviorConfig } from "../store";
-import { handleSubmit } from "../react";
+import { handleSubmit } from "../react/react";
 
 function SimpleForm({
   onSubmit,

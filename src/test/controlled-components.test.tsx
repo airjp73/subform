@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { useForm } from "../form";
-import { zodAdapter } from "../adapters/zod";
+import { useForm } from "../react/form";
+import { zodAdapter } from "../zod";
 import { ControlledInput, SubmitButton } from "./test-components";
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { handleSubmit } from "../react";
+import { handleSubmit } from "../react/react";
 
 function Form({ onSubmit }: { onSubmit: (data: any) => void }) {
   const form = useForm({

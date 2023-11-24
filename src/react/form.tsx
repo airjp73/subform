@@ -7,8 +7,8 @@ import type {
   SubformOptions,
   GenericObj,
   ValidationBehaviorConfig,
-} from "./store";
-import { createSubform, type Subform } from "./subform";
+} from "../store";
+import { createSubform, type Subform } from "../subform";
 import {
   useError,
   useHasSubmitBeenAttempted,
@@ -21,11 +21,11 @@ import {
   handleChange,
   setValue,
   validate,
-} from "./operations";
-import * as A from "./array";
+} from "../operations";
+import * as A from "../array";
 import { useStore } from "zustand";
-import { getStore } from "./internal";
-import { simpleId } from "./simpleId";
+import { getStore } from "../internal";
+import { simpleId } from "../simpleId";
 
 export type UseFieldOptions<Data> = {
   subform: Subform<Data>;
