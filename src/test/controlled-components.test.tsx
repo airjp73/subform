@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { useForm } from "../form";
-import { zodAdapter } from "../zod-validator";
+import { zodAdapter } from "../adapters/zod";
 import { ControlledInput, SubmitButton } from "./test-components";
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";

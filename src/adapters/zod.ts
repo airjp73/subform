@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { FieldErrors, Validator } from "./store";
+import type { FieldErrors, Validator } from "../store";
 
 const getIssuesForError = (err: z.ZodError<any>): z.ZodIssue[] => {
   return err.issues.flatMap((issue) => {
