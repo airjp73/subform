@@ -29,9 +29,9 @@ function SimpleForm({
     >
       <label>
         Age
-        <NumberInput type="number" formstand={form("age")} />
+        <NumberInput type="number" subform={form("age")} />
       </label>
-      <SubmitButton formstand={form} />
+      <SubmitButton subform={form} />
     </form>
   );
 }

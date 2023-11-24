@@ -4,8 +4,8 @@ import type { DataAtPath, Paths } from "../store";
 import { defaultMeta, makeFormStore } from "../store";
 import { zodAdapter } from "../zod-validator";
 import { z } from "zod";
-import type { Formstand } from "../formstand";
-import { createFormstand } from "../formstand";
+import type { Subform } from "../subform";
+import { createSubform } from "../subform";
 
 const dummyValidator = (data: unknown) => ({ errors: {} });
 
@@ -33,14 +33,14 @@ it("type tests", () => {
     ],
     tuple: ["", { b: new Date() }] as [string, { b: Date }],
   };
-  const formstand = createFormstand({
+  const subform = createSubform({
     initialValues: data,
     validator: dummyValidator,
   });
-  const subform = formstand("comments.0");
-  expectTypeOf(subform).toMatchTypeOf<Formstand<{ content: string }>>();
+  const firstComment = subform("comments.0");
+  expectTypeOf(firstComment).toMatchTypeOf<Subform<{ content: string }>>();
 
-  expectTypeOf(formstand("tuple.1.b")).toMatchTypeOf<Formstand<{ c: Date }>>();
+  expectTypeOf(subform("tuple.1.b")).toMatchTypeOf<Subform<{ c: Date }>>();
 });
 
 it("should set values", () => {

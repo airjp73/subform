@@ -4,11 +4,11 @@ import { useCallback, useReducer, useRef } from "react";
 import type {
   FieldArrayValidationBehaviorConfig,
   FieldMeta,
-  FormstandOptions,
+  SubformOptions,
   GenericObj,
   ValidationBehaviorConfig,
 } from "./store";
-import { createFormstand, type Formstand } from "./formstand";
+import { createSubform, type Subform } from "./subform";
 import {
   useError,
   useHasSubmitBeenAttempted,
@@ -28,7 +28,7 @@ import { getStore } from "./internal";
 import { simpleId } from "./simpleId";
 
 export type UseFieldOptions<Data> = {
-  formstand: Formstand<Data>;
+  subform: Subform<Data>;
   validationBehavior?: ValidationBehaviorConfig;
 };
 
@@ -60,11 +60,11 @@ export type UseFieldResult<Data> = {
 export function useField<Data>(
   opts: UseFieldOptions<Data>
 ): UseFieldResult<Data> {
-  const meta = useMeta(opts.formstand);
-  const value = useValue(opts.formstand);
-  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(opts.formstand);
+  const meta = useMeta(opts.subform);
+  const value = useValue(opts.subform);
+  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(opts.subform);
   const formLevelValidationBehavior = useStore(
-    getStore(opts.formstand),
+    getStore(opts.subform),
     (state) => state.validationBehavior
   );
 
@@ -81,26 +81,26 @@ export function useField<Data>(
 
   const directOnChange = useCallback(
     (value: Data) => {
-      handleChange(opts.formstand, value as any, validateOnChange);
+      handleChange(opts.subform, value as any, validateOnChange);
     },
-    [opts.formstand, validateOnChange]
+    [opts.subform, validateOnChange]
   );
 
   const directOnBlur = useCallback(() => {
-    handleBlur(opts.formstand, validateOnBlur);
-  }, [opts.formstand, validateOnBlur]);
+    handleBlur(opts.subform, validateOnBlur);
+  }, [opts.subform, validateOnBlur]);
 
   const directSetValue = useCallback(
     (value: Data) => {
-      setValue(opts.formstand, value);
+      setValue(opts.subform, value);
     },
-    [opts.formstand]
+    [opts.subform]
   );
 
   const getInputProps = useCallback(
     ({ format, parse }: GetInputPropsOpts<Data> = {}): GetInputPropsResult => {
       return {
-        name: opts.formstand.path,
+        name: opts.subform.path,
         onChange: (e: ChangeEvent<any>) => {
           const value = parse ? parse(e.target.value) : e.target.value;
           directOnChange(value);
@@ -111,7 +111,7 @@ export function useField<Data>(
         value: (format ? format(value) : value) as string,
       };
     },
-    [directOnBlur, directOnChange, opts.formstand.path, value]
+    [directOnBlur, directOnChange, opts.subform.path, value]
   );
 
   return {
@@ -125,13 +125,13 @@ export function useField<Data>(
 }
 
 export type UseFieldArrayOpts<Item> = {
-  formstand: Formstand<Item[]>;
+  subform: Subform<Item[]>;
   validationBehavior?: FieldArrayValidationBehaviorConfig;
 };
 
 export type UseFieldArrayResult<Item> = {
   map: <Output>(
-    fn: (formstand: Formstand<Item>, key: string, index: number) => Output
+    fn: (subform: Subform<Item>, key: string, index: number) => Output
   ) => Output[];
   error: string | undefined;
   pop: () => void;
@@ -149,10 +149,10 @@ export const useFieldArray = <Item,>(
   opts: UseFieldArrayOpts<Item>
 ): UseFieldArrayResult<Item> => {
   const formLevelValidationBehavior = useStore(
-    getStore(opts.formstand),
+    getStore(opts.subform),
     (state) => state.fieldArrayValidationBehavior
   );
-  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(opts.formstand);
+  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(opts.subform);
 
   const validationBehavior =
     opts.validationBehavior ?? formLevelValidationBehavior;
@@ -161,12 +161,12 @@ export const useFieldArray = <Item,>(
     : validationBehavior.initial;
   const validateOnChange = currentBehavior === "onChange";
   const maybeValidate = useCallback(() => {
-    if (validateOnChange) validate(opts.formstand);
-  }, [opts.formstand, validateOnChange]);
+    if (validateOnChange) validate(opts.subform);
+  }, [opts.subform, validateOnChange]);
 
   const arrayLength = useStore(
-    getStore(opts.formstand),
-    (state) => (state.getValue(opts.formstand.path) as any[]).length
+    getStore(opts.subform),
+    (state) => (state.getValue(opts.subform.path) as any[]).length
   );
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -178,112 +178,112 @@ export const useFieldArray = <Item,>(
   if (keys.current.length !== arrayLength)
     keys.current = R.range(0, arrayLength).map(simpleId);
 
-  const formstandInstance = opts.formstand;
+  const subformInstance = opts.subform;
 
   return {
-    error: useError(opts.formstand),
+    error: useError(opts.subform),
     map: useCallback(
       <Output,>(
-        fn: (formstand: Formstand<Item>, key: string, index: number) => Output
+        fn: (subform: Subform<Item>, key: string, index: number) => Output
       ) => {
         return keys.current.map((key, index) => {
-          const formstand = formstandInstance(`${index}` as any);
-          return fn(formstand, key, index);
+          const subform = subformInstance(`${index}` as any);
+          return fn(subform, key, index);
         });
       },
-      // For some reason, the linter won't let us put `opts.formstand` here
-      [formstandInstance]
+      // For some reason, the linter won't let us put `opts.subform` here
+      [subformInstance]
     ),
     pop: useCallback(() => {
-      array.pop(opts.formstand);
+      array.pop(opts.subform);
       keys.current = A.pop(keys.current);
       maybeValidate();
       // Will update automatically because the length changed
-    }, [maybeValidate, opts.formstand]),
+    }, [maybeValidate, opts.subform]),
 
     push: useCallback(
       (item: Item) => {
-        array.push(opts.formstand, item as any);
+        array.push(opts.subform, item as any);
         keys.current = A.push(keys.current, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
 
     remove: useCallback(
       (index: number) => {
-        array.remove(opts.formstand, index);
+        array.remove(opts.subform, index);
         keys.current = A.remove(keys.current, index);
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
 
     swap: useCallback(
       (indexA: number, indexB: number) => {
-        array.swap(opts.formstand, indexA, indexB);
+        array.swap(opts.subform, indexA, indexB);
         keys.current = A.swap(keys.current, indexA, indexB);
         maybeValidate();
         forceUpdate();
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
 
     move: useCallback(
       (from: number, to: number) => {
-        array.move(opts.formstand, from, to);
+        array.move(opts.subform, from, to);
         keys.current = A.move(keys.current, from, to);
         maybeValidate();
         forceUpdate();
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
 
     insert: useCallback(
       (index: number, item: Item) => {
-        array.insert(opts.formstand, index, item as any);
+        array.insert(opts.subform, index, item as any);
         keys.current = A.insert(keys.current, index, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
 
     unshift: useCallback(
       (item: Item) => {
-        array.unshift(opts.formstand, item as any);
+        array.unshift(opts.subform, item as any);
         keys.current = A.unshift(keys.current, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
 
     shift: useCallback(() => {
-      array.shift(opts.formstand);
+      array.shift(opts.subform);
       keys.current = A.shift(keys.current);
       maybeValidate();
       // Will update automatically because the length changed
-    }, [maybeValidate, opts.formstand]),
+    }, [maybeValidate, opts.subform]),
 
     replace: useCallback(
       (index: number, item: Item) => {
-        array.replace(opts.formstand, index, item as any);
+        array.replace(opts.subform, index, item as any);
         keys.current = A.replace(keys.current, index, simpleId());
         maybeValidate();
         forceUpdate();
       },
-      [maybeValidate, opts.formstand]
+      [maybeValidate, opts.subform]
     ),
   };
 };
 
 export const useForm = <Data extends GenericObj, Output>(
-  opts: FormstandOptions<Data, Output>
-): Formstand<Data, Data, Output> => {
-  const storeRef = useRef<Formstand<Data, Data, Output> | null>(null);
-  if (!storeRef.current) storeRef.current = createFormstand(opts);
+  opts: SubformOptions<Data, Output>
+): Subform<Data, Data, Output> => {
+  const storeRef = useRef<Subform<Data, Data, Output> | null>(null);
+  if (!storeRef.current) storeRef.current = createSubform(opts);
   return storeRef.current as any;
 };

@@ -1,53 +1,50 @@
 import { useStore } from "zustand";
-import type { Formstand } from "./formstand";
+import type { Subform } from "./subform";
 import type { DataAtPath, FieldMeta, GenericObj, Paths } from "./store";
 import { getStore } from "./internal";
 import type { FormEvent } from "react";
 import { submit } from "./operations";
 
 export const useValue = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): DataAtPath<Data, Paths<Data>> =>
-  useStore(getStore(formstand), (state) => state.getValue(formstand.path));
+  useStore(getStore(subform), (state) => state.getValue(subform.path));
 
 export const useMeta = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): FieldMeta =>
-  useStore(getStore(formstand), (state) => state.getMeta(formstand.path));
+  useStore(getStore(subform), (state) => state.getMeta(subform.path));
 
 export const useTouched = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): boolean =>
-  useStore(
-    getStore(formstand),
-    (state) => state.getMeta(formstand.path).touched
-  );
+  useStore(getStore(subform), (state) => state.getMeta(subform.path).touched);
 
 export const useDirty = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): boolean =>
-  useStore(getStore(formstand), (state) => state.getMeta(formstand.path).dirty);
+  useStore(getStore(subform), (state) => state.getMeta(subform.path).dirty);
 
 export const useError = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): string | undefined =>
-  useStore(getStore(formstand), (state) => state.getMeta(formstand.path).error);
+  useStore(getStore(subform), (state) => state.getMeta(subform.path).error);
 
 export const useIsSubmitting = <Data extends GenericObj>(
-  formstand: Formstand<Data>
-): boolean => useStore(getStore(formstand), (state) => state.isSubmitting);
+  subform: Subform<Data>
+): boolean => useStore(getStore(subform), (state) => state.isSubmitting);
 
 export const useHasSubmitBeenAttempted = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): boolean =>
-  useStore(getStore(formstand), (state) => state.hasSubmitBeenAttempted);
+  useStore(getStore(subform), (state) => state.hasSubmitBeenAttempted);
 
 export const handleSubmit =
   <Output>(
-    formstand: Formstand<any, any, Output>,
+    subform: Subform<any, any, Output>,
     submitter: (data: Output) => void | Promise<void>
   ) =>
   (e: FormEvent<any>) => {
     e.preventDefault();
-    submit(formstand, submitter);
+    submit(subform, submitter);
   };

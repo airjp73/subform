@@ -1,16 +1,16 @@
 import type { ComponentProps } from "react";
 import { useField } from "../form";
-import type { Formstand } from "../formstand";
+import type { Subform } from "../subform";
 import { useIsSubmitting } from "../react";
 
 export function Input({
-  formstand,
+  subform,
   type,
   ...rest
 }: ComponentProps<"input"> & {
-  formstand: Formstand<string>;
+  subform: Subform<string>;
 }) {
-  const { getInputProps, meta } = useField({ formstand });
+  const { getInputProps, meta } = useField({ subform });
   return (
     <div>
       <input type={type} {...getInputProps()} {...rest} />
@@ -22,12 +22,12 @@ export function Input({
 }
 
 export function ControlledInput({
-  formstand,
+  subform,
   ...rest
 }: ComponentProps<"input"> & {
-  formstand: Formstand<string>;
+  subform: Subform<string>;
 }) {
-  const { onChange, onBlur, meta, value } = useField({ formstand });
+  const { onChange, onBlur, meta, value } = useField({ subform });
   return (
     <div>
       <input
@@ -46,12 +46,12 @@ export function ControlledInput({
 }
 
 export function NumberInput({
-  formstand,
+  subform,
   ...rest
 }: ComponentProps<"input"> & {
-  formstand: Formstand<number>;
+  subform: Subform<number>;
 }) {
-  const { getInputProps, meta } = useField({ formstand });
+  const { getInputProps, meta } = useField({ subform });
   return (
     <div>
       <input
@@ -69,9 +69,9 @@ export function NumberInput({
 }
 
 export const SubmitButton = ({
-  formstand,
+  subform,
   ...rest
-}: ComponentProps<"button"> & { formstand: Formstand<any> }) => {
-  const isSubmitting = useIsSubmitting(formstand);
+}: ComponentProps<"button"> & { subform: Subform<any> }) => {
+  const isSubmitting = useIsSubmitting(subform);
   return <button {...rest}>{isSubmitting ? "Submitting..." : "Submit"}</button>;
 };

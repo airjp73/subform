@@ -45,7 +45,7 @@ function ArrayForm({
     validationBehavior,
   });
 
-  const names = useFieldArray({ formstand: form("names") });
+  const names = useFieldArray({ subform: form("names") });
 
   return (
     <form
@@ -58,11 +58,11 @@ function ArrayForm({
           <div key={key} data-testid="name-fields">
             <label>
               First name
-              <Input formstand={name("first")} />
+              <Input subform={name("first")} />
             </label>
             <label>
               Last name
-              <Input formstand={name("last")} />
+              <Input subform={name("last")} />
             </label>
             <button type="button" onClick={() => names.remove(index)}>
               Remove
@@ -98,7 +98,7 @@ function ArrayForm({
       >
         Insert
       </button>
-      <SubmitButton formstand={form} />
+      <SubmitButton subform={form} />
     </form>
   );
 }

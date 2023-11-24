@@ -168,7 +168,7 @@ export type FormStoreState<Data extends GenericObj, Output> = {
   };
 };
 
-export type FormstandOptions<Data extends GenericObj, Output> = {
+export type SubformOptions<Data extends GenericObj, Output> = {
   initialValues: Data;
   validator: Validator<Output>;
   validationBehavior?: ValidationBehaviorConfig;
@@ -186,7 +186,7 @@ export const makeFormStore = <Data extends GenericObj, Output>({
   validator,
   validationBehavior = defaultValidationBehavior,
   fieldArrayValidationBehavior = defaultFieldArrayValidationBehavior,
-}: FormstandOptions<Data, Output>) =>
+}: SubformOptions<Data, Output>) =>
   createStore<FormStoreState<Data, Output>>()(
     devtools((set, get) => ({
       validator,

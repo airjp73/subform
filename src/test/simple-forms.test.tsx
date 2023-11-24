@@ -47,13 +47,13 @@ function SimpleForm({
     >
       <label>
         First name
-        <Input formstand={form("name.first")} />
+        <Input subform={form("name.first")} />
       </label>
       <label>
         Last name
-        <Input formstand={form("name.last")} />
+        <Input subform={form("name.last")} />
       </label>
-      <SubmitButton formstand={form} />
+      <SubmitButton subform={form} />
     </form>
   );
 }

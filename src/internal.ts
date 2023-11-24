@@ -2,15 +2,12 @@ import type { StoreApi } from "zustand";
 import type { FormStoreState } from "./store";
 import invariant from "tiny-invariant";
 
-export const STORE_SYMBOL = Symbol("formstand store");
+export const STORE_SYMBOL = Symbol("subform store");
 
 type WithStore = { [STORE_SYMBOL]?: StoreApi<FormStoreState<any, any>> };
 
-export const getStore = <T extends WithStore>(formstand: T) => {
-  const store = formstand[STORE_SYMBOL];
-  invariant(
-    store,
-    "Formstand store not found. Please pass a formstand instance."
-  );
+export const getStore = <T extends WithStore>(subform: T) => {
+  const store = subform[STORE_SYMBOL];
+  invariant(store, "Subform store not found. Please pass a subform instance.");
   return store;
 };

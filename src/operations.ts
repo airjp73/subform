@@ -1,100 +1,92 @@
-import type { Formstand } from "./formstand";
+import type { Subform } from "./subform";
 import { getStore } from "./internal";
 import type { DataAtPath, FieldMeta, GenericObj, Paths } from "./store";
 
 export const getValue = <Data extends GenericObj>(
-  formstand: Formstand<Data>
+  subform: Subform<Data>
 ): DataAtPath<Data, Paths<Data>> =>
-  getStore(formstand).getState().getValue(formstand.path);
+  getStore(subform).getState().getValue(subform.path);
 
 export const setValue = <Data extends GenericObj>(
-  formstand: Formstand<Data>,
+  subform: Subform<Data>,
   value: DataAtPath<Data, Paths<Data>>
-) => getStore(formstand).getState().setValue(formstand.path, value);
+) => getStore(subform).getState().setValue(subform.path, value);
 
 export const getMeta = <Data extends GenericObj>(
-  formstand: Formstand<Data>
-): FieldMeta => getStore(formstand).getState().getMeta(formstand.path);
+  subform: Subform<Data>
+): FieldMeta => getStore(subform).getState().getMeta(subform.path);
 
 export const setTouched = <Data extends GenericObj>(
-  formstand: Formstand<Data>,
+  subform: Subform<Data>,
   touched: boolean
-) => getStore(formstand).getState().setTouched(formstand.path, touched);
+) => getStore(subform).getState().setTouched(subform.path, touched);
 
 export const setDirty = <Data extends GenericObj>(
-  formstand: Formstand<Data>,
+  subform: Subform<Data>,
   dirty: boolean
-) => getStore(formstand).getState().setDirty(formstand.path, dirty);
+) => getStore(subform).getState().setDirty(subform.path, dirty);
 
 export const setError = <Data extends GenericObj>(
-  formstand: Formstand<Data>,
+  subform: Subform<Data>,
   error: string
-) => getStore(formstand).getState().setError(formstand.path, error);
+) => getStore(subform).getState().setError(subform.path, error);
 
 export const handleChange = <Data extends GenericObj>(
-  formstand: Formstand<Data>,
+  subform: Subform<Data>,
   value: DataAtPath<Data, Paths<Data>>,
   shouldValidate?: boolean
-) =>
-  getStore(formstand)
-    .getState()
-    .onChange(formstand.path, value, shouldValidate);
+) => getStore(subform).getState().onChange(subform.path, value, shouldValidate);
 
 export const getSubmitAttempted = <Data extends GenericObj>(
-  formstand: Formstand<Data>
-) => getStore(formstand).getState().hasSubmitBeenAttempted;
+  subform: Subform<Data>
+) => getStore(subform).getState().hasSubmitBeenAttempted;
 
 export const handleBlur = <Data extends GenericObj>(
-  formstand: Formstand<Data>,
+  subform: Subform<Data>,
   shouldValidate?: boolean
-) => getStore(formstand).getState().onBlur(formstand.path, shouldValidate);
+) => getStore(subform).getState().onBlur(subform.path, shouldValidate);
 
-export const validate = <Data extends GenericObj>(formstand: Formstand<Data>) =>
-  getStore(formstand).getState().validate();
+export const validate = <Data extends GenericObj>(subform: Subform<Data>) =>
+  getStore(subform).getState().validate();
 
 export const submit = <Output>(
-  formstand: Formstand<any, any, Output>,
+  subform: Subform<any, any, Output>,
   submitter: (data: Output) => void | Promise<void>
-) => getStore(formstand).getState().submit(submitter);
+) => getStore(subform).getState().submit(submitter);
 
 export const array = {
-  pop: <Data extends GenericObj>(formstand: Formstand<Data>) =>
-    getStore(formstand).getState().array.pop(formstand.path),
+  pop: <Data extends GenericObj>(subform: Subform<Data>) =>
+    getStore(subform).getState().array.pop(subform.path),
   push: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
+    subform: Subform<Data>,
     value: DataAtPath<Data, Paths<Data>>
-  ) => getStore(formstand).getState().array.push(formstand.path, value),
-  remove: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
-    index: number
-  ) => getStore(formstand).getState().array.remove(formstand.path, index),
+  ) => getStore(subform).getState().array.push(subform.path, value),
+  remove: <Data extends GenericObj>(subform: Subform<Data>, index: number) =>
+    getStore(subform).getState().array.remove(subform.path, index),
   swap: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
+    subform: Subform<Data>,
     indexA: number,
     indexB: number
-  ) =>
-    getStore(formstand).getState().array.swap(formstand.path, indexA, indexB),
+  ) => getStore(subform).getState().array.swap(subform.path, indexA, indexB),
   move: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
+    subform: Subform<Data>,
     from: number,
     to: number
-  ) => getStore(formstand).getState().array.move(formstand.path, from, to),
+  ) => getStore(subform).getState().array.move(subform.path, from, to),
   insert: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
+    subform: Subform<Data>,
     index: number,
     value: DataAtPath<Data, Paths<Data>>
-  ) =>
-    getStore(formstand).getState().array.insert(formstand.path, index, value),
+  ) => getStore(subform).getState().array.insert(subform.path, index, value),
   unshift: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
+    subform: Subform<Data>,
     value: DataAtPath<Data, Paths<Data>>
-  ) => getStore(formstand).getState().array.unshift(formstand.path, value),
-  shift: <Data extends GenericObj>(formstand: Formstand<Data>) =>
-    getStore(formstand).getState().array.shift(formstand.path),
+  ) => getStore(subform).getState().array.unshift(subform.path, value),
+  shift: <Data extends GenericObj>(subform: Subform<Data>) =>
+    getStore(subform).getState().array.shift(subform.path),
   replace: <Data extends GenericObj>(
-    formstand: Formstand<Data>,
+    subform: Subform<Data>,
     index: number,
     value: DataAtPath<Data, Paths<Data>>
-  ) =>
-    getStore(formstand).getState().array.replace(formstand.path, index, value),
+  ) => getStore(subform).getState().array.replace(subform.path, index, value),
 };
