@@ -5,6 +5,9 @@
   "module": "./dist/index.esm.js",
   "main": "./dist/index.cjs.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "**"
+  ],
   "exports": {
     "./package.json": "./package.json",
     ".": {
