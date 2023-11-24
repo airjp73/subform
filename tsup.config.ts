@@ -10,5 +10,7 @@ export default defineConfig({
   define: {
     "import.meta.vitest": "undefined",
   },
+  noExternal: ["zustand"],
+  bundle: true,
   external: ["react", "react-dom", "zod"],
 });
