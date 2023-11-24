@@ -1,42 +1,25 @@
 {
   "name": "subform",
-  "private": true,
   "sideEffects": false,
-  "main": "dist/index.cjs.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "**"
-  ],
+  "module": "./dist/index.esm.js",
+  "main": "./dist/index.cjs.js",
+  "types": "./dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.esm.js"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.cjs.js"
-      }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "default": "./dist/index.cjs.js"
     },
     "./zod": {
-      "import": {
-        "types": "./dist/zod/index.d.ts",
-        "default": "./dist/zod/index.esm.js"
-      },
-      "require": {
-        "types": "./dist/zod/index.d.ts",
-        "default": "./dist/zod/index.cjs.js"
-      }
+      "types": "./dist/zod/index.d.ts",
+      "import": "./dist/zod/index.esm.js",
+      "default": "./dist/zod/index.cjs.js"
     },
     "./react": {
-      "import": {
-        "types": "./dist/react/index.d.ts",
-        "default": "./dist/react/index.esm.js"
-      },
-      "require": {
-        "types": "./dist/react/index.d.ts",
-        "default": "./dist/react/index.cjs.js"
-      }
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.esm.js",
+      "default": "./dist/react/index.cjs.js"
     }
   },
   "scripts": {
