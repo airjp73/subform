@@ -10,7 +10,5 @@ export default defineConfig({
   define: {
     "import.meta.vitest": "undefined",
   },
-  outExtension({ format }) {
-    return { js: `.${format}.js` };
-  },
+  external: ["react", "react-dom", "zod"],
 });

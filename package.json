@@ -2,34 +2,45 @@
   "name": "subform",
   "version": "0.0.3",
   "sideEffects": false,
-  "module": "./dist/index.esm.js",
-  "main": "./dist/index.cjs.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "**"
-  ],
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.esm.js",
-      "default": "./dist/index.cjs.js"
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.ts"
+      },
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
     },
     "./zod": {
-      "types": "./dist/zod/index.d.ts",
-      "import": "./dist/zod/index.esm.js",
-      "default": "./dist/zod/index.cjs.js"
+      "types": {
+        "import": "./dist/zod/index.d.mts",
+        "require": "./dist/zod/index.d.ts"
+      },
+      "import": "./dist/zod/index.mjs",
+      "default": "./dist/zod/index.js"
     },
     "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.esm.js",
-      "default": "./dist/react/index.cjs.js"
+      "types": {
+        "import": "./dist/react/index.d.mts",
+        "require": "./dist/react/index.d.ts"
+      },
+      "import": "./dist/react/index.mjs",
+      "default": "./dist/react/index.js"
     }
   },
+  "files": [
+    "**"
+  ],
+  "license": "MIT",
   "scripts": {
     "typecheck": "tsc",
     "test": "vitest",
-    "build": "tsup"
+    "build": "tsup",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@testing-library/user-event": "^14.5.1",
