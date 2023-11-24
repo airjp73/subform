@@ -1,5 +1,6 @@
 {
   "name": "subform",
+  "version": "0.0.1",
   "sideEffects": false,
   "module": "./dist/index.esm.js",
   "main": "./dist/index.cjs.js",
