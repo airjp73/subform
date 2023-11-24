@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { handleSubmit } from "src/react";
-import { createSubform } from "src/subform";
-import { zodAdapter } from "src/zod-validator";
+import { handleSubmit } from "../react";
+import { createSubform } from "../subform";
+import { zodAdapter } from "../zod-validator";
 import { expect, it, vi } from "vitest";
 import { z } from "zod";
 import { Input } from "./test-components";
@@ -31,18 +31,15 @@ it("should focus first invalid field on submit", async () => {
       <input name="middle" />
       <input name="last" />
       <form onSubmit={handleSubmit(form, submit)}>
-        <label>
-          First
-          <Input subform={form("first")} />
-        </label>
-        <label>
-          Middle
-          <Input subform={form("middle")} />
-        </label>
-        <label>
-          Last
-          <Input subform={form("last")} />
-        </label>
+        <label htmlFor="first">First</label>
+        <Input id="first" subform={form("first")} />
+
+        <label htmlFor="middle">Middle</label>
+        <Input id="middle" subform={form("middle")} />
+
+        <label htmlFor="last">Last</label>
+        <Input id="last" subform={form("last")} />
+
         <button type="submit">Submit</button>
       </form>
     </>
@@ -50,6 +47,7 @@ it("should focus first invalid field on submit", async () => {
 
   await userEvent.click(screen.getByText("Submit"));
   expect(submit).not.toHaveBeenCalled();
+  screen.getByLabelText("First").focus();
   expect(screen.getByLabelText("First")).toHaveFocus();
 
   await userEvent.type(screen.getByLabelText("First"), "ab");
@@ -69,4 +67,12 @@ it("should focus first invalid field on submit", async () => {
     middle: "cd",
     last: "ef",
   });
+});
+
+it("sanity check for callback refs", () => {
+  const ref = vi.fn();
+  const { unmount } = render(<input ref={ref} />);
+  expect(ref).toHaveBeenCalledWith(expect.any(HTMLElement));
+  unmount();
+  expect(ref).toHaveBeenCalledWith(null);
 });

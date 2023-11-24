@@ -179,6 +179,27 @@ it("should validate", async () => {
   });
 });
 
+it("should sync element references", () => {
+  const store = makeFormStore({
+    validator: dummyValidator,
+    initialValues: {
+      name: "test",
+      age: 10,
+    },
+  });
+  const inputA = document.createElement("input");
+  const inputB = document.createElement("input");
+  store.getState().syncElement("name", inputA);
+  expect(store.getState().elementsRef.name).toBe(inputA);
+  store.getState().syncElement("age", inputB);
+  expect(store.getState().elementsRef.age).toBe(inputB);
+  store.getState().syncElement("name", null);
+  expect(store.getState().elementsRef).toEqual({ age: inputB });
+  store.getState().syncElement("age", null);
+  expect(store.getState().elementsRef).toEqual({});
+  expect(Object.keys(store.getState().elementsRef)).toHaveLength(0);
+});
+
 describe("arrays", () => {
   it("should pop", () => {
     const store = makeFormStore({

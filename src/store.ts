@@ -97,6 +97,7 @@ export type FormStoreState<Data extends GenericObj, Output> = {
   validator: Validator<Output>;
   values: Data;
   errors: FieldErrors;
+  elementsRef: Record<string, HTMLElement>;
   touched: Record<string, boolean>;
   dirty: Record<string, boolean>;
   isSubmitting: boolean;
@@ -125,6 +126,8 @@ export type FormStoreState<Data extends GenericObj, Output> = {
   setTouched: (path: Paths<Data>, value: boolean) => void;
   setDirty: (path: Paths<Data>, value: boolean) => void;
   setError: (path: Paths<Data>, error: string) => void;
+
+  syncElement: (path: Paths<Data>, element: unknown | null | undefined) => void;
 
   array: {
     push: <Path extends Paths<Data>>(
@@ -181,6 +184,23 @@ const getPathSegments = (path: string): (string | number)[] =>
     return isNaN(parsed) ? segment : parsed;
   });
 
+const focusFirstInvalidElement = (
+  elementsRef: Record<string, unknown>,
+  errors: FieldErrors
+) => {
+  const nameSelector = Object.keys(errors)
+    .filter((key) => key in elementsRef)
+    .map((key) => `[name="${key}"]`)
+    .join(",");
+  const matches = [...document.querySelectorAll(nameSelector)];
+  const firstInvalidFocusable = matches.find((match) => {
+    const name = match.getAttribute("name");
+    invariant(name);
+    return elementsRef[name] === match && "focus" in match;
+  });
+  (firstInvalidFocusable as any)?.focus();
+};
+
 export const makeFormStore = <Data extends GenericObj, Output>({
   initialValues,
   validator,
@@ -194,6 +214,7 @@ export const makeFormStore = <Data extends GenericObj, Output>({
       errors: {},
       touched: {},
       dirty: {},
+      elementsRef: {},
       isSubmitting: false,
       hasSubmitBeenAttempted: false,
       validationBehavior,
@@ -218,6 +239,8 @@ export const makeFormStore = <Data extends GenericObj, Output>({
         const result = await get().validate();
         if ("data" in result) {
           await submitFunction(result.data);
+        } else {
+          focusFirstInvalidElement(get().elementsRef, result.errors);
         }
         set((prev) => R.set(prev, "isSubmitting", false));
       },
@@ -287,6 +310,18 @@ export const makeFormStore = <Data extends GenericObj, Output>({
             errors: R.set(prev.errors, path, error),
           };
         });
+      },
+
+      syncElement: (path, element) => {
+        // This elementsRef is used as a ref, and should never trigger an update,
+        // we won't be using `set` and instead mutate the object directly.
+        if (element == null) {
+          delete get().elementsRef[path];
+          return;
+        }
+
+        // @ts-ignore
+        get().elementsRef[path] = element;
       },
 
       array: {

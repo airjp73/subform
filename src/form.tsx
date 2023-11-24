@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, RefCallback } from "react";
 import * as R from "remeda";
 import { useCallback, useReducer, useRef } from "react";
 import type {
@@ -42,6 +42,7 @@ export type GetInputPropsResult = {
   onChange: (e: ChangeEvent<any>) => void;
   onBlur: () => void;
   value: string;
+  ref: RefCallback<any>;
 };
 
 export type GetInputProps<Data> = Data extends string
@@ -109,9 +110,14 @@ export function useField<Data>(
           directOnBlur();
         },
         value: (format ? format(value) : value) as string,
+        ref: (element: HTMLElement | undefined) => {
+          getStore(opts.subform)
+            .getState()
+            .syncElement(opts.subform.path, element);
+        },
       };
     },
-    [directOnBlur, directOnChange, opts.subform.path, value]
+    [directOnBlur, directOnChange, opts.subform, value]
   );
 
   return {
