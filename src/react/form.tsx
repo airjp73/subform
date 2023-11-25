@@ -51,6 +51,7 @@ export type GetInputProps<Data> = Data extends string
 export type UseFieldResult<Data> = {
   meta: FieldMeta;
   value: Data;
+  ref: RefCallback<HTMLElement>;
   setValue: (value: Data) => void;
   getInputProps: GetInputProps<Data>;
   onChange: (value: Data) => void;
@@ -98,6 +99,13 @@ export function useField<Data>(
     [subform]
   );
 
+  const ref = useCallback<RefCallback<HTMLElement>>(
+    (element) => {
+      getStore(subform).getState().syncElement(subform.path, element);
+    },
+    [subform]
+  );
+
   const getInputProps = useCallback(
     ({ format, parse }: GetInputPropsOpts<Data> = {}): GetInputPropsResult => {
       return {
@@ -121,6 +129,7 @@ export function useField<Data>(
   return {
     meta,
     value,
+    ref,
     setValue: directSetValue,
     getInputProps: getInputProps as GetInputProps<Data>,
     onChange: directOnChange,
