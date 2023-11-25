@@ -124,6 +124,7 @@ it("should update meta", () => {
   expect(store.getState().getMeta("bob.ross.name")).toEqual({
     ...defaultMeta,
     touched: true,
+    shouldShowError: true,
   });
   expect(store.getState().getMeta("bob.ross")).toEqual({
     ...defaultMeta,
@@ -152,6 +153,7 @@ it("should handle change and blur events", () => {
     ...defaultMeta,
     dirty: true,
     touched: true,
+    shouldShowError: true,
   });
 });
 

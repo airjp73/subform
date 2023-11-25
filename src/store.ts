@@ -59,11 +59,13 @@ export type FieldMeta = {
   touched: boolean;
   dirty: boolean;
   error?: string;
+  shouldShowError: boolean;
 };
-export const defaultMeta = {
+export const defaultMeta: FieldMeta = {
   touched: false,
   dirty: false,
   error: undefined,
+  shouldShowError: false,
 };
 
 export type ValidationBehavior = "onChange" | "onBlur" | "onSubmit";
@@ -122,6 +124,10 @@ export type FormStoreState<Data extends GenericObj, Output> = {
     path: Path,
     value: DataAtPath<Data, Path>
   ) => void;
+  getShouldShowError: (path: Paths<Data>) => boolean;
+  getTouched: (path: Paths<Data>) => boolean;
+  getDirty: (path: Paths<Data>) => boolean;
+  getError: (path: Paths<Data>) => string | undefined;
   getMeta: (path: Paths<Data>) => FieldMeta;
   setTouched: (path: Paths<Data>, value: boolean) => void;
   setDirty: (path: Paths<Data>, value: boolean) => void;
@@ -278,13 +284,24 @@ export const makeFormStore = <Data extends GenericObj, Output>({
         if (shouldValidate) get().validate();
       },
 
+      getShouldShowError: (path) => {
+        return get().getTouched(path) || get().hasSubmitBeenAttempted;
+      },
+      getTouched: (path) => {
+        return get().touched[path] ?? defaultMeta.touched;
+      },
+      getDirty: (path) => {
+        return get().dirty[path] ?? defaultMeta.dirty;
+      },
+      getError: (path) => {
+        return get().errors[path] ?? defaultMeta.error;
+      },
       getMeta: (path) => {
         return {
-          dirty: get().dirty[path] ?? defaultMeta.dirty,
-          touched:
-            (get().touched[path] ?? defaultMeta.touched) ||
-            get().hasSubmitBeenAttempted,
-          error: get().errors[path] ?? defaultMeta.error,
+          touched: get().getTouched(path),
+          dirty: get().getDirty(path),
+          error: get().getError(path),
+          shouldShowError: get().getShouldShowError(path),
         };
       },
       setTouched: (path, value) => {

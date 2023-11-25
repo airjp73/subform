@@ -14,7 +14,7 @@ export function Input({
   return (
     <div>
       <input type={type} {...getInputProps()} {...rest} />
-      {meta.touched && meta.error && (
+      {meta.shouldShowError && meta.error && (
         <p style={{ color: "red" }}>{meta.error}</p>
       )}
     </div>
