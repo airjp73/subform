@@ -20,16 +20,16 @@
         "import": "./dist/zod/index.d.mts",
         "default": "./dist/zod/index.d.ts"
       },
-      "import": "./dist/zod/index.mjs",
-      "default": "./dist/zod/index.js"
+      "import": "./dist/zod.mjs",
+      "default": "./dist/zod.js"
     },
     "./react": {
       "types": {
         "import": "./dist/react/index.d.mts",
         "default": "./dist/react/index.d.ts"
       },
-      "import": "./dist/react/index.mjs",
-      "qr": "./dist/react/index.js"
+      "import": "./dist/react.mjs",
+      "qr": "./dist/react.js"
     }
   },
   "files": [
@@ -39,7 +39,9 @@
   "scripts": {
     "typecheck": "tsc",
     "test": "vitest",
-    "build": "tsup",
+    "build": "bun run vite && bun run types && bun run ./bin/makeMts.ts",
+    "vite": "ENTRY=src/index.ts vite build && ENTRY=src/react/index.ts vite build && ENTRY=src/zod/index.ts vite build",
+    "types": "tsc",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
@@ -53,12 +55,13 @@
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
+    "bun-types": "*",
     "eslint": "^8.38.0",
     "jsdom": "^22.1.0",
     "remeda": "^1.29.0",
     "tiny-invariant": "^1.3.1",
-    "tsup": "^8.0.1",
     "typescript": "^5.1.6",
+    "vite": "^5.0.2",
     "vitest": "^0.34.6",
     "zustand": "^4.4.6"
   },
