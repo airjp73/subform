@@ -293,8 +293,8 @@ export const useFieldArray = <Item,>(
 
 export const useForm = <Data extends GenericObj, Output>(
   opts: SubformOptions<Data, Output>
-): Subform<Data, Data, Output> => {
-  const storeRef = useRef<Subform<Data, Data, Output> | null>(null);
+): Subform<Data, Output> => {
+  const storeRef = useRef<Subform<Data, Output> | null>(null);
   if (!storeRef.current) storeRef.current = createSubform(opts);
   return storeRef.current as any;
 };

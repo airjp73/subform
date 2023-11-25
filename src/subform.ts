@@ -9,26 +9,18 @@ import {
 } from "./store";
 import { STORE_SYMBOL } from "./internal";
 
-export interface Subform<
-  Data,
-  RootData extends GenericObj = GenericObj,
-  Output = unknown
-> {
-  <N extends Paths<Data>>(name: N): Subform<
-    DataAtPath<Data, N>,
-    RootData,
-    Output
-  >;
-  path: Paths<Data>;
+export interface Subform<Data, Output = unknown> {
+  <N extends Paths<Data>>(name: N): Subform<DataAtPath<Data, N>, Output>;
+  path: string;
   [STORE_SYMBOL]: StoreApi<FormStoreState<any, unknown>>;
 }
 
-function createSubformInternal<Data, RootData extends GenericObj, Output>(
+function createSubformInternal<Data, Output>(
   _data: Data,
-  prefix: Paths<RootData>,
-  store: StoreApi<FormStoreState<RootData, Output>>
-): Subform<Data, RootData, Output> {
-  const form: Subform<Data, RootData, Output> = (name) =>
+  prefix: string,
+  store: StoreApi<FormStoreState<any, Output>>
+): Subform<Data, Output> {
+  const form: Subform<Data, Output> = (name) =>
     createSubformInternal(
       null as any,
       prefix === "" ? name : (`${prefix}.${name}` as any),
@@ -43,6 +35,6 @@ function createSubformInternal<Data, RootData extends GenericObj, Output>(
 
 export function createSubform<Data extends GenericObj, Output>(
   opts: SubformOptions<Data, Output>
-): Subform<Data, Data, Output> {
+): Subform<Data, Output> {
   return createSubformInternal(null as any, "" as any, makeFormStore(opts));
 }
