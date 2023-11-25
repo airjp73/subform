@@ -9,38 +9,64 @@ import { createSubform } from "../subform";
 
 const dummyValidator = (data: unknown) => ({ errors: {} });
 
-it("type tests", () => {
-  expectTypeOf<DataAtPath<{ a: string }, "a">>().toMatchTypeOf<string>();
-  expectTypeOf<
-    DataAtPath<{ a: { b: { c: number } } }, "a.b.c">
-  >().toMatchTypeOf<number>();
-  expectTypeOf<DataAtPath<{ a: number[] }, "a.0">>().toMatchTypeOf<number>();
-  expectTypeOf<DataAtPath<{ a: { b: string }[] }, "a.0">>().toMatchTypeOf<{
-    b: string;
-  }>();
-  expectTypeOf<Paths<{ a: { b: string }[] }>>(
-    "a.0.b"
-  ).not.toMatchTypeOf<"a.b">();
+describe("type tests", () => {
+  it("should correctly infer paths and the data at those paths", () => {
+    expectTypeOf<DataAtPath<{ a: string }, "a">>().toMatchTypeOf<string>();
+    expectTypeOf<
+      DataAtPath<{ a: { b: { c: number } } }, "a.b.c">
+    >().toMatchTypeOf<number>();
+    expectTypeOf<DataAtPath<{ a: number[] }, "a.0">>().toMatchTypeOf<number>();
+    expectTypeOf<DataAtPath<{ a: { b: string }[] }, "a.0">>().toMatchTypeOf<{
+      b: string;
+    }>();
+    expectTypeOf<Paths<{ a: { b: string }[] }>>(
+      "a.0.b"
+    ).not.toMatchTypeOf<"a.b">();
 
-  // @ts-expect-error
-  expectTypeOf<Paths<{ a: { b: string }[] }>>("a.0.c");
+    // @ts-expect-error
+    expectTypeOf<Paths<{ a: { b: string }[] }>>("a.0.c");
 
-  const data = {
-    comments: [
-      {
-        content: "",
-      },
-    ],
-    tuple: ["", { b: new Date() }] as [string, { b: Date }],
-  };
-  const subform = createSubform({
-    initialValues: data,
-    validator: dummyValidator,
+    const data = {
+      comments: [
+        {
+          content: "",
+        },
+      ],
+      tuple: ["", { b: new Date() }] as [string, { b: Date }],
+    };
+    const subform = createSubform({
+      initialValues: data,
+      validator: dummyValidator,
+    });
+    const firstComment = subform("comments.0");
+    expectTypeOf<Subform<{ content: string }>>().toMatchTypeOf(firstComment);
+    expectTypeOf<Subform<{ b: Date }>>().toMatchTypeOf(subform("tuple.1"));
   });
-  const firstComment = subform("comments.0");
-  expectTypeOf(firstComment).toMatchTypeOf<Subform<{ content: string }>>();
 
-  expectTypeOf(subform("tuple.1.b")).toMatchTypeOf<Subform<{ c: Date }>>();
+  it("should handle infinitely recursive types", () => {
+    type Node = {
+      value: string;
+      children: Node[];
+    };
+    const form = createSubform({
+      initialValues: {
+        value: "",
+        children: [],
+      } as Node,
+      validator: dummyValidator,
+    });
+
+    expectTypeOf(form("children.0.children.0.children.0")).toMatchTypeOf<
+      Subform<Node>
+    >();
+    const t = form("value");
+    expectTypeOf<Subform<string>>().toMatchTypeOf(t);
+    const nestedChild = form("children.0.children.0.children.0");
+    expectTypeOf<Subform<Node>>().toMatchTypeOf(nestedChild);
+    const moreNested = nestedChild("children.0.children.0.children.0");
+    expectTypeOf<Subform<Node>>().toMatchTypeOf(moreNested);
+    expectTypeOf<Subform<string>>().toMatchTypeOf(moreNested("value"));
+  });
 });
 
 it("should set values", () => {

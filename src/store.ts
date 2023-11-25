@@ -8,18 +8,24 @@ type TupleIndeces<T extends any[]> = T extends [any, ...infer Rest]
   ? TupleIndeces<Rest> | Rest["length"]
   : never;
 
-export type Paths<T> = T extends [any, ...any[]]
-  ? {
-      [K in TupleIndeces<T>]: `${K}` | `${K}.${Paths<T[K]>}`;
-    }[TupleIndeces<T>]
-  : T extends Array<infer Item>
-  ? `${number}${"" | `.${Paths<Item>}`}`
-  : T extends Date
+type DepthLimit = [6, 5, 4, 3, 2, 1, 0];
+
+export type Paths<T, Depth = DepthLimit> = Depth extends []
   ? never
-  : T extends object
-  ? {
-      [K in keyof T]: `${Exclude<K, symbol>}${"" | `.${Paths<T[K]>}`}`;
-    }[keyof T]
+  : Depth extends [any, ...infer Rest]
+  ? T extends [any, ...any[]]
+    ? {
+        [K in TupleIndeces<T>]: `${K}` | `${K}.${Paths<T[K], Rest>}`;
+      }[TupleIndeces<T>]
+    : T extends Array<infer Item>
+    ? `${number}${"" | `.${Paths<Item, Rest>}`}`
+    : T extends Date
+    ? never
+    : T extends object
+    ? {
+        [K in keyof T]: `${Exclude<K, symbol>}${"" | `.${Paths<T[K], Rest>}`}`;
+      }[keyof T]
+    : never
   : never;
 
 export type FieldErrors = Record<string, string>;
