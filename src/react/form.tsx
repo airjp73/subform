@@ -27,8 +27,7 @@ import { useStore } from "zustand";
 import { getStore } from "../internal";
 import { simpleId } from "../simpleId";
 
-export type UseFieldOptions<Data> = {
-  subform: Subform<Data>;
+export type UseFieldOptions = {
   validationBehavior?: ValidationBehaviorConfig;
 };
 
@@ -59,13 +58,14 @@ export type UseFieldResult<Data> = {
 };
 
 export function useField<Data>(
-  opts: UseFieldOptions<Data>
+  subform: Subform<Data>,
+  opts: UseFieldOptions = {}
 ): UseFieldResult<Data> {
-  const meta = useMeta(opts.subform);
-  const value = useValue(opts.subform);
-  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(opts.subform);
+  const meta = useMeta(subform);
+  const value = useValue(subform);
+  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(subform);
   const formLevelValidationBehavior = useStore(
-    getStore(opts.subform),
+    getStore(subform),
     (state) => state.validationBehavior
   );
 
@@ -82,26 +82,26 @@ export function useField<Data>(
 
   const directOnChange = useCallback(
     (value: Data) => {
-      handleChange(opts.subform, value as any, validateOnChange);
+      handleChange(subform, value as any, validateOnChange);
     },
-    [opts.subform, validateOnChange]
+    [subform, validateOnChange]
   );
 
   const directOnBlur = useCallback(() => {
-    handleBlur(opts.subform, validateOnBlur);
-  }, [opts.subform, validateOnBlur]);
+    handleBlur(subform, validateOnBlur);
+  }, [subform, validateOnBlur]);
 
   const directSetValue = useCallback(
     (value: Data) => {
-      setValue(opts.subform, value);
+      setValue(subform, value);
     },
-    [opts.subform]
+    [subform]
   );
 
   const getInputProps = useCallback(
     ({ format, parse }: GetInputPropsOpts<Data> = {}): GetInputPropsResult => {
       return {
-        name: opts.subform.path,
+        name: subform.path,
         onChange: (e: ChangeEvent<any>) => {
           const value = parse ? parse(e.target.value) : e.target.value;
           directOnChange(value);
@@ -111,13 +111,11 @@ export function useField<Data>(
         },
         value: (format ? format(value) : value) as string,
         ref: (element: HTMLElement | undefined) => {
-          getStore(opts.subform)
-            .getState()
-            .syncElement(opts.subform.path, element);
+          getStore(subform).getState().syncElement(subform.path, element);
         },
       };
     },
-    [directOnBlur, directOnChange, opts.subform, value]
+    [directOnBlur, directOnChange, subform, value]
   );
 
   return {
@@ -130,8 +128,7 @@ export function useField<Data>(
   };
 }
 
-export type UseFieldArrayOpts<Item> = {
-  subform: Subform<Item[]>;
+export type UseFieldArrayOpts = {
   validationBehavior?: FieldArrayValidationBehaviorConfig;
 };
 
@@ -152,13 +149,14 @@ export type UseFieldArrayResult<Item> = {
 };
 
 export const useFieldArray = <Item,>(
-  opts: UseFieldArrayOpts<Item>
+  subform: Subform<Item[]>,
+  opts: UseFieldArrayOpts = {}
 ): UseFieldArrayResult<Item> => {
   const formLevelValidationBehavior = useStore(
-    getStore(opts.subform),
+    getStore(subform),
     (state) => state.fieldArrayValidationBehavior
   );
-  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(opts.subform);
+  const hasSubmitBeenAttempted = useHasSubmitBeenAttempted(subform);
 
   const validationBehavior =
     opts.validationBehavior ?? formLevelValidationBehavior;
@@ -167,12 +165,12 @@ export const useFieldArray = <Item,>(
     : validationBehavior.initial;
   const validateOnChange = currentBehavior === "onChange";
   const maybeValidate = useCallback(() => {
-    if (validateOnChange) validate(opts.subform);
-  }, [opts.subform, validateOnChange]);
+    if (validateOnChange) validate(subform);
+  }, [subform, validateOnChange]);
 
   const arrayLength = useStore(
-    getStore(opts.subform),
-    (state) => (state.getValue(opts.subform.path) as any[]).length
+    getStore(subform),
+    (state) => (state.getValue(subform.path) as any[]).length
   );
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -184,104 +182,102 @@ export const useFieldArray = <Item,>(
   if (keys.current.length !== arrayLength)
     keys.current = R.range(0, arrayLength).map(simpleId);
 
-  const subformInstance = opts.subform;
-
   return {
-    error: useError(opts.subform),
+    error: useError(subform),
     map: useCallback(
       <Output,>(
         fn: (subform: Subform<Item>, key: string, index: number) => Output
       ) => {
         return keys.current.map((key, index) => {
-          const subform = subformInstance(`${index}` as any);
-          return fn(subform, key, index);
+          const nestedSubform = subform(`${index}` as any);
+          return fn(nestedSubform, key, index);
         });
       },
-      // For some reason, the linter won't let us put `opts.subform` here
-      [subformInstance]
+      // For some reason, the linter won't let us put `subform` here
+      [subform]
     ),
     pop: useCallback(() => {
-      array.pop(opts.subform);
+      array.pop(subform);
       keys.current = A.pop(keys.current);
       maybeValidate();
       // Will update automatically because the length changed
-    }, [maybeValidate, opts.subform]),
+    }, [maybeValidate, subform]),
 
     push: useCallback(
       (item: Item) => {
-        array.push(opts.subform, item as any);
+        array.push(subform, item as any);
         keys.current = A.push(keys.current, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
 
     remove: useCallback(
       (index: number) => {
-        array.remove(opts.subform, index);
+        array.remove(subform, index);
         keys.current = A.remove(keys.current, index);
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
 
     swap: useCallback(
       (indexA: number, indexB: number) => {
-        array.swap(opts.subform, indexA, indexB);
+        array.swap(subform, indexA, indexB);
         keys.current = A.swap(keys.current, indexA, indexB);
         maybeValidate();
         forceUpdate();
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
 
     move: useCallback(
       (from: number, to: number) => {
-        array.move(opts.subform, from, to);
+        array.move(subform, from, to);
         keys.current = A.move(keys.current, from, to);
         maybeValidate();
         forceUpdate();
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
 
     insert: useCallback(
       (index: number, item: Item) => {
-        array.insert(opts.subform, index, item as any);
+        array.insert(subform, index, item as any);
         keys.current = A.insert(keys.current, index, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
 
     unshift: useCallback(
       (item: Item) => {
-        array.unshift(opts.subform, item as any);
+        array.unshift(subform, item as any);
         keys.current = A.unshift(keys.current, simpleId());
         maybeValidate();
         // Will update automatically because the length changed
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
 
     shift: useCallback(() => {
-      array.shift(opts.subform);
+      array.shift(subform);
       keys.current = A.shift(keys.current);
       maybeValidate();
       // Will update automatically because the length changed
-    }, [maybeValidate, opts.subform]),
+    }, [maybeValidate, subform]),
 
     replace: useCallback(
       (index: number, item: Item) => {
-        array.replace(opts.subform, index, item as any);
+        array.replace(subform, index, item as any);
         keys.current = A.replace(keys.current, index, simpleId());
         maybeValidate();
         forceUpdate();
       },
-      [maybeValidate, opts.subform]
+      [maybeValidate, subform]
     ),
   };
 };

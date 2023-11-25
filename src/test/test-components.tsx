@@ -10,7 +10,7 @@ export function Input({
 }: ComponentProps<"input"> & {
   subform: Subform<string>;
 }) {
-  const { getInputProps, meta } = useField({ subform });
+  const { getInputProps, meta } = useField(subform);
   return (
     <div>
       <input type={type} {...getInputProps()} {...rest} />
@@ -27,7 +27,7 @@ export function ControlledInput({
 }: ComponentProps<"input"> & {
   subform: Subform<string>;
 }) {
-  const { onChange, onBlur, meta, value } = useField({ subform });
+  const { onChange, onBlur, meta, value } = useField(subform);
   return (
     <div>
       <input
@@ -51,7 +51,7 @@ export function NumberInput({
 }: ComponentProps<"input"> & {
   subform: Subform<number>;
 }) {
-  const { getInputProps, meta } = useField({ subform });
+  const { getInputProps, meta } = useField(subform);
   return (
     <div>
       <input

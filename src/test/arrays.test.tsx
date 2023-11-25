@@ -45,7 +45,7 @@ function ArrayForm({
     validationBehavior,
   });
 
-  const names = useFieldArray({ subform: form("names") });
+  const names = useFieldArray(form("names"));
 
   return (
     <form
