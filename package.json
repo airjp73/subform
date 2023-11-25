@@ -36,6 +36,10 @@
     "**"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airjp73/subform"
+  },
   "scripts": {
     "typecheck": "tsc",
     "test": "vitest",
