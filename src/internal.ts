@@ -2,7 +2,7 @@ import type { StoreApi } from "zustand";
 import type { FormStoreState } from "./store";
 import invariant from "tiny-invariant";
 
-export const STORE_SYMBOL = Symbol("subform store");
+export const STORE_SYMBOL = "__internal_subform_store_do_not_use";
 
 type WithStore = { [STORE_SYMBOL]?: StoreApi<FormStoreState<any, any>> };
 
